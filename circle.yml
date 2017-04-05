@@ -14,3 +14,16 @@ dependencies:
 test:
   override:
     - yarn test
+  post:
+    - cp -r dist/* "${CIRCLE_ARTIFACTS}"
+deployment:
+  prod:
+    branch: master
+    commands:
+      - git clone --branch gh-pages --single-branch "${CIRCLE_REPOSITORY_URL}" prod
+      - cp -r dist/* prod
+      - cd prod && git config user.name CircleCI
+      - cd prod && git config user.email pspeter333@gmail.com
+      - cd prod && git add --all
+      - cd prod && git commit --allow-empty --message "${CIRCLE_BUILD_URL}"
+      - cd prod && git push --force "${DEPLOY_URL}" gh-pages
