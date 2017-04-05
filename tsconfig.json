@@ -3,6 +3,8 @@
   "compilerOptions": {
     "alwaysStrict": true,
     "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "jsxFactory": "preact.h",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
