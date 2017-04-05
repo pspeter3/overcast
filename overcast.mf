@@ -4,5 +4,7 @@ CACHE MANIFEST
 /overcast/c75685c0006d1092d216eb18.js
 /overcast/48d0dde2691feeab7d2cc589.map
 #736d29eaa7299c22de4b1cf8614129b7
-//cdnjs.cloudflare.com/ajax/libs/preact/7.2.1/preact.js
+//cdnjs.cloudflare.com/ajax/libs/preact/7.2.1/preact.min.js
 
+NETWORK:
+*
