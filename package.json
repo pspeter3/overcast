@@ -7,7 +7,7 @@
   "author": "Phips Peter <pspeter333@gmail.com>",
   "scripts": {
     "env": "env",
-    "build:appcache": "appcache-manifest --postfile third_party --prefix \"/${npm_package_name}\" --output \"dist/${npm_package_name}.mf\" dist/**/*",
+    "build:appcache": "appcache-manifest --network-star --postfile third_party --prefix \"/${npm_package_name}\" --output \"dist/${npm_package_name}.mf\" dist/**/*",
     "build:css": "postcss \"${npm_package_name}.css\" --dir dist --map --use cssnano",
     "build:hash": "hashmark --cwd dist --length 24 --rename '**/*.{css,js}.*' '{hash}{ext}' | replaceinfiles --source 'dist/**/*.{css,js,mf}'",
     "build:html": "appcache-manifest-fixer --manifest \"${npm_package_name}.mf\" index.html | html-minifier --config-file html.json --output dist/index.html",
