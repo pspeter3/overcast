@@ -1,0 +1,15 @@
+{
+  "name": "overcast",
+  "version": "0.0.0",
+  "private": true,
+  "description": "RPG Character Sheet Based On AirTable",
+  "repository": "git@github.com:pspeter3/overcast.git",
+  "author": "Phips Peter <pspeter333@gmail.com>",
+  "scripts": {
+    "test": "echo 'overcast'"
+  },
+  "devDependencies": {
+    "tslint": "^5.0.0",
+    "typescript": "^2.2.2"
+  }
+}
