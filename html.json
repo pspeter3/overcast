@@ -1,0 +1,14 @@
+{
+  "collapseBooleanAttributes": true,
+  "collapseWhitespace": true,
+  "html5": true,
+  "removeComments": true,
+  "removeEmptyAttributes": true,
+  "removeOptionalTags": true,
+  "removeRedundantAttributes": true,
+  "removeScriptTypeAttributes": true,
+  "removeStyleLinkTypeAttributes": true,
+  "sortAttributes": true,
+  "sortClassName": true,
+  "useShortDoctype": true
+}

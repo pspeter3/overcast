@@ -6,10 +6,32 @@
   "repository": "git@github.com:pspeter3/overcast.git",
   "author": "Phips Peter <pspeter333@gmail.com>",
   "scripts": {
-    "test": "echo 'overcast'"
+    "env": "env",
+    "build:appcache": "appcache-manifest --postfile third_party --prefix \"/${npm_package_name}\" --output \"dist/${npm_package_name}.mf\" dist/**/*",
+    "build:css": "postcss \"${npm_package_name}.css\" --dir dist --map --use cssnano",
+    "build:hash": "hashmark --cwd dist --length 24 --rename '**/*.{css,js}.*' '{hash}{ext}' | replaceinfiles --source 'dist/**/*.{css,js,mf}'",
+    "build:html": "appcache-manifest-fixer --manifest \"${npm_package_name}.mf\" index.html | html-minifier --config-file html.json --output dist/index.html",
+    "build:js": "tsc && uglifyjs --compress --in-source-map \"${npm_package_name}.js.map\" --mangle --output \"dist/${npm_package_name}.js\" --screw-ie8 --source-map \"dist/${npm_package_name}.js.map\" \"${npm_package_name}.js\"",
+    "build": "yarn build:hash",
+    "lint": "tslint --project tsconfig.json --type-check",
+    "postbuild:hash": "hashmark --cwd dist --length 24 --rename '**/*.{css,js}' '{hash}{ext}' | replaceinfiles --source 'dist/**/*.{html,mf}'",
+    "prebuild:appcache": "yarn build:css && yarn build:js",
+    "prebuild:hash": "yarn build:appcache && yarn build:html",
+    "prebuild": "rm -rf dist *.js",
+    "start": "tsc && parallelshell 'tsc --watch' 'live-server .'",
+    "test": "yarn lint && yarn build"
   },
   "devDependencies": {
+    "appcache-manifest": "^2.1.0",
+    "cssnano": "^3.10.0",
+    "hashmark": "^4.1.0",
+    "html-minifier": "^3.4.2",
+    "live-server": "^1.2.0",
+    "parallelshell": "^2.0.0",
+    "postcss-cli": "^3.1.1",
+    "replaceinfiles": "^1.1.4",
     "tslint": "^5.0.0",
-    "typescript": "^2.2.2"
+    "typescript": "^2.2.2",
+    "uglify-js": "^2.8.21"
   }
 }
