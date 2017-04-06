@@ -1,24 +1,22 @@
-const content = (
-    <form>
-        <div class="cell">
-            <input type="text" name="name" placeholder="Sombra"/>
-            <label for="name">Name</label>
-        </div>
-        <div class="cell">
-            <input type="number" name="power" min="0" max="10" placeholder="9000"/>
-            <label for="power">Power</label>
-        </div>
-        <div class="cell">
-            <select name="type">
-                <option>Warrior</option>
-            </select>
-            <label for="type">Type</label>
-        </div>
-        <div class="cell">
-            <textarea name="notes" placeholder="Hack The Planet"/>
-            <label for="notes">Notes</label>
-        </div>
-    </form >
-)
+/**
+ * UI
+ */
+const AppBar = (): JSX.Element => {
+    return (
+        <header>
+            <a class="menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M2 13.5h14V12H2v1.5zm0-4h14V8H2v1.5zM2 4v1.5h14V4H2z" />
+                </svg>
+            </a>
+            <span class="title">Overcast</span>
+        </header>
+    )
+}
 
-preact.render(content, document.body)
+/**
+ * Init
+ */
+window.addEventListener("load", () => {
+    preact.render(<AppBar />, document.body)
+})
+
