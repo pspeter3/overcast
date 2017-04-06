@@ -21,9 +21,9 @@ body {
 .cell label {
   color: rgba(0, 0, 0, 0.38);
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   height: 1rem;
-  line-height: 1.3333rem;
+  line-height: 1rem;
   position: absolute;
   top: 1rem;
 }
