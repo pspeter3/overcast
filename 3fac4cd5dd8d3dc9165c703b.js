@@ -1,0 +1,2 @@
+"use strict";var appbar=preact.h("header",null,preact.h("a",{class:"menu"},preact.h("svg",{xmlns:"http://www.w3.org/2000/svg",width:"18",height:"18",viewBox:"0 0 18 18"},preact.h("path",{d:"M2 13.5h14V12H2v1.5zm0-4h14V8H2v1.5zM2 4v1.5h14V4H2z"}))),preact.h("span",{class:"title"},"Overcast"));window.addEventListener("load",function(){preact.render(appbar,document.body)});
+//# sourceMappingURL=dist/1ed42509191351ce4072e3b7.map
