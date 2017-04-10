@@ -60,7 +60,6 @@ const Login = (props: {authenticate: EventListener}): JSX.Element => {
     )
 }
 
-
 /**
  * Application
  */
@@ -70,8 +69,8 @@ interface AppState {
 }
 
 class App extends preact.Component<{}, AppState> {
-    state: AppState = {
-        auth: this._auth()
+    public state: AppState = {
+        auth: this._auth(),
     }
 
     public render(): JSX.Element {
@@ -112,7 +111,7 @@ class App extends preact.Component<{}, AppState> {
 
     private _onStorage = (): void => {
         this.setState({
-            auth: this._auth()
+            auth: this._auth(),
         })
     }
 

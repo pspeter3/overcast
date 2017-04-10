@@ -84,7 +84,7 @@
       "avoid-escape"
     ],
     "radix": true,
-    "restrict-plus-operands": true,
+    "restrict-plus-operands": false,
     "semicolon": [
       true,
       "never"
