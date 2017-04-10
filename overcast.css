@@ -24,13 +24,16 @@ header {
   position: relative;
 }
 
-header .menu {
-  left: 1rem;
+header .icon {
   height: 1.5rem;
   position: absolute;
   text-align: center;
-  top: 1rem;
   width: 1.5rem;
+}
+
+header .menu {
+  left: 1rem;
+  top: 1rem;
 }
 
 header .title {
@@ -39,6 +42,11 @@ header .title {
   font-weight: 500;
   left: 4.5rem;
   position: absolute;
+}
+
+header .upgrade {
+  right: 1rem;
+  top: 1rem;
 }
 
 /**
