@@ -26,7 +26,7 @@
       "LF"
     ],
     "max-line-length": [
-      true,
+      false,
       100
     ],
     "member-access": true,
@@ -84,7 +84,7 @@
       "avoid-escape"
     ],
     "radix": true,
-    "restrict-plus-operands": true,
+    "restrict-plus-operands": false,
     "semicolon": [
       true,
       "never"
