@@ -128,7 +128,6 @@ class App extends preact.Component<AppProps, AppState> {
         return localStorage.getItem(TOKEN_KEY)
     }
 
-
     private _main(): JSX.Element {
         const base = this._base()
         const token = this.state.token
