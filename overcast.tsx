@@ -3,12 +3,7 @@
  */
 type Maybe<T> = T | null
 
-const AUTH_KEY = "$auth"
-
-interface Authentication {
-    readonly base: string
-    readonly token: string
-}
+const TOKEN_KEY = "$token"
 
 function forceReload(): void {
     location.reload(true)
@@ -40,16 +35,12 @@ const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
     )
 }
 
-const Login = (props: {authenticate: EventListener}): JSX.Element => {
+const Login = (props: { authenticate: EventListener }): JSX.Element => {
     return (
         <form onSubmit={props.authenticate}>
             <fieldset>
                 <div class="cell">
-                    <input type="url" name="base" required placeholder="https://api.airtable.com/v0/" autocomplete="url" autofocus />
-                    <label for="base">Base</label>
-                </div>
-                <div class="cell">
-                    <input type="text" name="token" required inputMode="verbatim" />
+                    <input type="password" name="token" required inputMode="verbatim" autofocus />
                     <label for="token">Token</label>
                 </div>
                 <div class="cell">
@@ -60,58 +51,66 @@ const Login = (props: {authenticate: EventListener}): JSX.Element => {
     )
 }
 
+const MissingBase = () => {
+    return (
+        <main class="missing-base">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+                <path d="M24 4C12.96 4 4 12.95 4 24s8.96 20 20 20 20-8.95 20-20S35.04 4 24 4zm2 30h-4v-4h4v4zm0-8h-4V14h4v12z" />
+            </svg>
+            <p>Base is required in querystring</p>
+        </main>
+    )
+}
+
 /**
  * Application
  */
+interface AppProps {
+    query: Record<string, string>
+}
+
 interface AppState {
-    readonly auth: Maybe<Authentication>
+    readonly token: Maybe<string>
     readonly updateReady?: boolean
 }
 
-class App extends preact.Component<{}, AppState> {
+class App extends preact.Component<AppProps, AppState> {
     public state: AppState = {
-        auth: this._auth(),
+        token: this._token(),
     }
 
     public render(): JSX.Element {
-        const main = this.state.auth === null
-            ? <Login authenticate={this._authenticate}/>
-            : <pre>{this.state.auth.base}</pre>
         return (
             <div class="app">
                 <AppBar updateReady={this.state.updateReady} />
-                <main>
-                    {main}
-                </main>
+                {this._main()}
             </div>
         )
     }
 
     public componentWillMount(): void {
         applicationCache.addEventListener("updateready", this._onUpdateReady)
-        window.addEventListener("storage", this._onStorage)
+        window.addEventListener("storage", this._setToken)
     }
 
     public componentWillUnmount(): void {
         applicationCache.removeEventListener("updateready", this._onUpdateReady)
-        window.removeEventListener("storage", this._onStorage)
+        window.removeEventListener("storage", this._setToken)
     }
 
     private _authenticate = (evt: Event): void => {
         evt.preventDefault()
         const target = evt.currentTarget as HTMLFormElement
-        const inputs = Array.prototype.slice.call(target.querySelectorAll("input"))
-        const values = inputs.reduce((acc: Record<string, string>, node: HTMLInputElement): Record<string, string> => {
-            acc[node.name] = node.value
-            return acc
-        }, {} as Record<string, string>)
-        localStorage.setItem(AUTH_KEY, JSON.stringify(values))
-        this._onStorage()
+        const input = target.querySelector("input")
+        if (input) {
+            localStorage.setItem(TOKEN_KEY, input.value)
+            this._setToken()
+        }
     }
 
-    private _onStorage = (): void => {
+    private _setToken = (): void => {
         this.setState({
-            auth: this._auth(),
+            token: this._token(),
         })
     }
 
@@ -121,11 +120,25 @@ class App extends preact.Component<{}, AppState> {
         })
     }
 
-    private _auth(): Maybe<Authentication> {
-        const value = localStorage.getItem(AUTH_KEY)
-        return typeof value === "string"
-            ? JSON.parse(value)
-            : value
+    private _base(): Maybe<string> {
+        return this.props.query["base"] || null
+    }
+
+    private _token(): Maybe<string> {
+        return localStorage.getItem(TOKEN_KEY)
+    }
+
+
+    private _main(): JSX.Element {
+        const base = this._base()
+        const token = this.state.token
+        if (token === null) {
+            return <Login authenticate={this._authenticate} />
+        }
+        if (base === null) {
+            return <MissingBase/>
+        }
+        return <p>{base}</p>
     }
 }
 
@@ -133,5 +146,10 @@ class App extends preact.Component<{}, AppState> {
  * Init
  */
 window.addEventListener("load", () => {
-    preact.render(<App />, document.body)
+    const query = window.location.search.substring(1).split("&").reduce((q, segment) => {
+        const pair = segment.split("=")
+        q[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1])
+        return q
+    }, {} as Record<string, string>)
+    preact.render(<App query={query} />, document.body)
 })
