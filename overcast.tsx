@@ -28,8 +28,192 @@ function forceReload(): void {
 }
 
 /**
+ * Schema
+ */
+const DESCRIPTORS = [
+    "Appealing",
+    "Brash",
+    "Calm",
+    "Charming",
+    "Clever",
+    "Clumsy",
+    "Craven",
+    "Creative",
+    "Cruel",
+    "Dishonorable",
+    "Doomed",
+    "Driven",
+    "Empathic",
+    "Exiled",
+    "Fast",
+    "Foolish",
+    "Graceful",
+    "Guarded",
+    "Hardy",
+    "Hideous",
+    "Honorable",
+    "Impulsive",
+    "Inquisitive",
+    "Intelligent",
+    "Jovial",
+    "Kind",
+    "Learned",
+    "Lucky",
+    "Mad",
+    "Mechanical",
+    "Mysterious",
+    "Mystical",
+    "Naive",
+    "Noble",
+    "Perceptive",
+    "Resilient",
+    "Rugged",
+    "Sharp-Eyed",
+    "Skeptical",
+    "Spiritual",
+    "Stealthy",
+    "Strong",
+    "Strong-Willed",
+    "Swift",
+    "Tongue-Tied",
+    "Tough",
+    "Vengeful",
+    "Virtuous",
+    "Wealthy",
+    "Weird"
+]
+
+const FLAVORS = [
+    "Stealth",
+    "Technology",
+    "Combat",
+    "Skills and Knowledge"
+]
+
+const TYPES = [
+    "Warrior",
+    "Adept",
+    "Explorer",
+    "Speaker"
+]
+
+const FOCI = [
+    "Abides in Stone",
+    "Battles Robots",
+    "Bears a Halo of Fire",
+    "Blazes with Radiance",
+    "Builds Robots",
+    "Calculates the Incalculable",
+    "Carries a Quiver",
+    "Commands Mental Powers",
+    "Conducts Weird Science",
+    "Consorts With the Dead",
+    "Controls Gravity",
+    "Crafts Unique Objects",
+    "Defends the Weak",
+    "Doesn't Do Much",
+    "Employs Magnetism",
+    "Exists Partially Out of Phase",
+    "Exists in Two Places at Once",
+    "Explores Dark Places",
+    "Explores Deep Waters",
+    "Fights Dirty",
+    "Fights With Panache",
+    "Focuses Mind Over Matter",
+    "Fuses Flesh and Steel",
+    "Fuses Mind and Machine",
+    "Grows to Towering Heights",
+    "Hunts With Great Skill",
+    "Infiltrates",
+    "Interprets the Law",
+    "Is Idolized by Millions",
+    "Is Licensed to Carry",
+    "Leads",
+    "Lives in the Wilderness",
+    "Looks for Trouble",
+    "Masters Defense",
+    "Masters Weaponry",
+    "Masters the Swarm",
+    "Metes Out Justice",
+    "Moves Like a Cat",
+    "Moves Like the Wind",
+    "Murders",
+    "Needs No Weapon",
+    "Never Says Die",
+    "Operates Undercover",
+    "Performs Feats of Strength",
+    "Rages",
+    "Rides the Lightning",
+    "Sees Beyond",
+    "Separates Mind From Body",
+    "Siphons Power",
+    "Slays Monster",
+    "Solves Mysteries",
+    "Stands Like a Bastion",
+    "Talks to Machines",
+    "Throws With Deadly Accuracy",
+    "Travels Through Time",
+    "Wears a Sheen of Ice",
+    "Wields Two Weapons at Once",
+    "Works the Back Alleys",
+    "Works the System",
+    "Would Rather Be Reading"
+]
+
+/**
  * UI
  */
+const Row = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+    return (
+        <div class="row">
+            {children}
+        </div>
+    )
+}
+
+const Cell = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+    return (
+        <div class="cell">
+            {children}
+        </div>
+    )
+}
+
+const Label = ({ name }: { name: string }): JSX.Element => {
+    return <label for={name}>{name}</label>
+}
+
+
+const TextField = (props: { name: string; } & JSX.HTMLAttributes): JSX.Element => {
+    const name = props.name
+    const attrs = props.type
+        ? props
+        : { type: "text", ...props }
+    return (
+        <Cell>
+            <input name={name} {...attrs} />
+            <Label name={name} />
+        </Cell>
+    )
+}
+
+const Select = ({ name, options, value }: { name: string; options: string[]; value: string }): JSX.Element => {
+    return (
+        <Cell>
+            <select name={name}>
+                {
+                    options.map((option, index) => {
+                        const key = index.toString(16)
+                        const selected = option === value
+                        return <option key={key} value={option} selected={selected}>{option}</option>
+                    })
+                }
+            </select>
+            <Label name={name} />
+        </Cell>
+    )
+}
+
 const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
     const upgrade = props.updateReady
         ? (
@@ -52,13 +236,14 @@ const Login = (props: { authenticate: EventListener }): JSX.Element => {
     return (
         <form onSubmit={props.authenticate}>
             <fieldset>
-                <div class="cell">
-                    <input type="password" name="token" required inputMode="verbatim" autofocus />
-                    <label for="token">Token</label>
-                </div>
-                <div class="cell">
-                    <button type="submit">Authenticate</button>
-                </div>
+                <Row>
+                    <TextField name="token" type="password" required inputMode="verbatim" autofocus />
+                </Row>
+                <Row>
+                    <Cell>
+                        <button type="submit">Authenticate</button>
+                    </Cell>
+                </Row>
             </fieldset>
         </form>
     )
@@ -83,10 +268,39 @@ const Loading = (): JSX.Element => {
     )
 }
 
-const ListItem = ({ record }: { key: string; record: CharacterNameRecord }): JSX.Element => {
-    return (
-        <a class="item" href={`#${record.id}`}>{record.fields.Name}</a>
-    )
+/**
+ * Character Sheet
+ */
+interface CharacterProps {
+    readonly base: string
+    readonly id: string
+    readonly token: string
+}
+
+interface CharacterState { }
+
+class Character extends preact.Component<CharacterProps, CharacterState> {
+    public render(_: CharacterProps, __: CharacterState): JSX.Element {
+        return (
+            <main class="character">
+                <fieldset>
+                    <Row>
+                        <TextField name="name" value="" />
+                    </Row>
+                    <Row>
+                        <Select name="descriptor" value="" options={DESCRIPTORS} />
+                    </Row>
+                    <Row>
+                        <Select name="flavor" value="" options={FLAVORS} />
+                        <Select name="type" value="" options={TYPES} />
+                    </Row>
+                    <Row>
+                        <Select name="focus" value="" options={FOCI} />
+                    </Row>
+                </fieldset>
+            </main>
+        )
+    }
 }
 
 /**
@@ -110,7 +324,9 @@ class List extends preact.Component<ListProps, ListState> {
         if (state.characters) {
             return (
                 <main class="list">
-                    {state.characters.map((c) => <ListItem key={c.id} record={c} />)}
+                    {state.characters.map((c) => {
+                        return <a class="item" href={`#${c.id}`}>{c.fields.Name}</a>
+                    })}
                 </main>
             )
         }
@@ -149,12 +365,14 @@ interface AppProps {
 }
 
 interface AppState {
+    readonly hash: string
     readonly token: Maybe<string>
     readonly updateReady?: boolean
 }
 
 class App extends preact.Component<AppProps, AppState> {
     public state: AppState = {
+        hash: this._hash(),
         token: this._token(),
     }
 
@@ -168,13 +386,15 @@ class App extends preact.Component<AppProps, AppState> {
     }
 
     public componentWillMount(): void {
-        applicationCache.addEventListener("updateready", this._onUpdateReady)
-        window.addEventListener("storage", this._setToken)
+        applicationCache.addEventListener("updateready", this._updateState)
+        window.addEventListener("hashchange", this._updateState)
+        window.addEventListener("storage", this._updateState)
     }
 
     public componentWillUnmount(): void {
-        applicationCache.removeEventListener("updateready", this._onUpdateReady)
-        window.removeEventListener("storage", this._setToken)
+        applicationCache.removeEventListener("updateready", this._updateState)
+        window.removeEventListener("hashchange", this._updateState)
+        window.removeEventListener("storage", this._updateState)
     }
 
     private _authenticate = (evt: Event): void => {
@@ -183,18 +403,14 @@ class App extends preact.Component<AppProps, AppState> {
         const input = target.querySelector("input")
         if (input) {
             localStorage.setItem(TOKEN_KEY, input.value)
-            this._setToken()
+            this._updateState()
         }
     }
 
-    private _setToken = (): void => {
+    private _updateState = (): void => {
         this.setState({
+            hash: this._hash(),
             token: this._token(),
-        })
-    }
-
-    private _onUpdateReady = (): void => {
-        this.setState({
             updateReady: applicationCache.status === applicationCache.UPDATEREADY,
         })
     }
@@ -207,16 +423,24 @@ class App extends preact.Component<AppProps, AppState> {
         return localStorage.getItem(TOKEN_KEY)
     }
 
+    private _hash(): string {
+        return window.location.hash.substring(1)
+    }
+
     private _main(): JSX.Element {
         const base = this._base()
         const token = this.state.token
+        const hash = this.state.hash
         if (token === null) {
             return <Login authenticate={this._authenticate} />
         }
         if (base === null) {
             return <Err message="Base is required in querystring" />
         }
-        return <List base={base} token={token} />
+        if (hash.length === 0) {
+            return <List base={base} token={token} />
+        }
+        return <Character base={base} id={hash} token={token} />
     }
 }
 

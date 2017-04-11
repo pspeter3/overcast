@@ -52,13 +52,19 @@ header .upgrade {
 fieldset {
   border: none;
   background: #ffffff;
-  padding: 0 1rem;
+}
+
+.row {
+  display: flex;
+  padding: 0 0.5rem;
+  width: 100%;
 }
 
 .cell {
+  flex: 1;
   height: 4.5rem;
+  margin: 0 0.5rem;
   position: relative;
-  width: 100%;
 }
 
 .cell label {
@@ -68,6 +74,7 @@ fieldset {
   height: 1rem;
   line-height: 1rem;
   position: absolute;
+  text-transform: capitalize;
   top: 1rem;
 }
 
@@ -75,6 +82,7 @@ fieldset {
   background: none;
   border: none;
   border-bottom: 0.0625rem solid rgba(0, 0, 0, 0.12);
+  border-radius: 0;
   box-shadow: none;
   color: rgba(0, 0, 0, 0.87);
   display: block;
