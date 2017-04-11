@@ -108,21 +108,21 @@ const DESCRIPTORS = [
     "Vengeful",
     "Virtuous",
     "Wealthy",
-    "Weird"
+    "Weird",
 ]
 
 const FLAVORS = [
     "Stealth",
     "Technology",
     "Combat",
-    "Skills and Knowledge"
+    "Skills and Knowledge",
 ]
 
 const TYPES = [
     "Warrior",
     "Adept",
     "Explorer",
-    "Speaker"
+    "Speaker",
 ]
 
 const FOCI = [
@@ -185,7 +185,7 @@ const FOCI = [
     "Wields Two Weapons at Once",
     "Works the Back Alleys",
     "Works the System",
-    "Would Rather Be Reading"
+    "Would Rather Be Reading",
 ]
 
 /**
@@ -210,7 +210,6 @@ const Cell = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
 const Label = ({ name }: { name: string }): JSX.Element => {
     return <label for={name}>{name}</label>
 }
-
 
 const TextField = (props: { name: string; } & JSX.HTMLAttributes): JSX.Element => {
     const name = props.name
@@ -343,9 +342,7 @@ class Character extends preact.Component<CharacterProps, CharacterState> {
     public componentWillMount(): void {
         const props = this.props
         get<CharacterRecord>(props.base, props.token, `Characters/${props.id}`).then((value) => {
-            this.setState({
-                value: value
-            })
+            this.setState({ value })
         })
     }
 }
@@ -359,7 +356,7 @@ interface ListProps {
 }
 
 interface ListState {
-    value?: CharacterListResponse | string;
+    value?: CharacterListResponse | string
 }
 
 class List extends preact.Component<ListProps, ListState> {
@@ -382,9 +379,7 @@ class List extends preact.Component<ListProps, ListState> {
 
     public componentWillMount(): void {
         get<CharacterListResponse>(this.props.base, this.props.token, "Characters?fields[]=Name").then((value) => {
-            this.setState({
-                value: value
-            })
+            this.setState({ value })
         })
     }
 }
