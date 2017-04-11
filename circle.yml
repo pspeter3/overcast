@@ -14,8 +14,6 @@ dependencies:
 test:
   override:
     - yarn test
-  post:
-    - cp -r dist/* "${CIRCLE_ARTIFACTS}"
 deployment:
   prod:
     branch: master

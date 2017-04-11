@@ -18,7 +18,7 @@
     "prebuild:appcache": "yarn build:css && yarn build:js",
     "prebuild:hash": "yarn build:appcache && yarn build:html",
     "prebuild": "rm -rf dist *.js",
-    "start": "tsc && parallelshell 'tsc --watch' 'live-server .'",
+    "start": "tsc && parallelshell 'tsc --watch' 'live-server . --ignore=.git'",
     "test": "yarn lint && yarn build"
   },
   "devDependencies": {
