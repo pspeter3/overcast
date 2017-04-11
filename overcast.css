@@ -31,16 +31,11 @@ header .icon {
   width: 1.5rem;
 }
 
-header .menu {
-  left: 1rem;
-  top: 1rem;
-}
-
 header .title {
   bottom: 1.25rem;
   font-size: 1.25rem;
   font-weight: 500;
-  left: 4.5rem;
+  left: 1rem;
   position: absolute;
 }
 
