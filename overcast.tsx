@@ -17,8 +17,21 @@ interface AirtableListResponse<T extends AirtableRecord<{}>> {
     records: T[]
 }
 
-interface CharacterNameRecord extends AirtableRecord<{ readonly Name: String }> { }
+interface CharacterNameFields {
+    readonly Name: string
+}
+
+interface CharacterFields extends CharacterNameFields {
+    readonly Descriptor: string
+    readonly Flavor: string
+    readonly Focus: string
+    readonly Type: string
+}
+
+interface CharacterNameRecord extends AirtableRecord<CharacterNameFields> { }
 interface CharacterListResponse extends AirtableListResponse<CharacterNameRecord> { }
+
+interface CharacterRecord extends AirtableRecord<CharacterFields> { }
 
 const AIRTABLE = "https://api.airtable.com/v0"
 const TOKEN_KEY = "$token"
@@ -292,29 +305,48 @@ interface CharacterProps {
     readonly token: string
 }
 
-interface CharacterState { }
+interface CharacterState {
+    value?: CharacterRecord | string
+}
 
 class Character extends preact.Component<CharacterProps, CharacterState> {
-    public render(_: CharacterProps, __: CharacterState): JSX.Element {
+    public render(_: CharacterProps, state: CharacterState): JSX.Element {
+        const value = state.value
+        if (!value) {
+            return <Loading />
+        }
+        if (typeof value === "string") {
+            return <Err message={value} />
+        }
+        const fields = value.fields
         return (
             <main class="character">
                 <fieldset>
                     <Row>
-                        <TextField name="name" value="" />
+                        <TextField name="name" value={fields.Name} />
                     </Row>
                     <Row>
-                        <Select name="descriptor" value="" options={DESCRIPTORS} />
+                        <Select name="descriptor" value={fields.Descriptor} options={DESCRIPTORS} />
                     </Row>
                     <Row>
-                        <Select name="flavor" value="" options={FLAVORS} />
-                        <Select name="type" value="" options={TYPES} />
+                        <Select name="flavor" value={fields.Flavor} options={FLAVORS} />
+                        <Select name="type" value={fields.Type} options={TYPES} />
                     </Row>
                     <Row>
-                        <Select name="focus" value="" options={FOCI} />
+                        <Select name="focus" value={fields.Focus} options={FOCI} />
                     </Row>
                 </fieldset>
             </main>
         )
+    }
+
+    public componentWillMount(): void {
+        const props = this.props
+        get<CharacterRecord>(props.base, props.token, `Characters/${props.id}`).then((value) => {
+            this.setState({
+                value: value
+            })
+        })
     }
 }
 
