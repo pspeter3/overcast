@@ -3,6 +3,24 @@
  */
 type Maybe<T> = T | null
 
+interface AirtableErrorResponse {
+    readonly error: { readonly message: string }
+}
+
+interface AirtableRecord<T> {
+    readonly id: string
+    readonly fields: T
+    readonly createdTime: string
+}
+
+interface AirtableListResponse<T extends AirtableRecord<{}>> {
+    records: T[]
+}
+
+interface CharacterNameRecord extends AirtableRecord<{ readonly Name: String }> { }
+interface CharacterListResponse extends AirtableListResponse<CharacterNameRecord> { }
+
+const AIRTABLE = "https://api.airtable.com/v0"
 const TOKEN_KEY = "$token"
 
 function forceReload(): void {
@@ -46,22 +64,88 @@ const Login = (props: { authenticate: EventListener }): JSX.Element => {
     )
 }
 
-const MissingBase = () => {
+const Err = (props: { message: string }): JSX.Element => {
     return (
-        <main class="missing-base">
+        <main class="error">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
                 <path d="M24 4C12.96 4 4 12.95 4 24s8.96 20 20 20 20-8.95 20-20S35.04 4 24 4zm2 30h-4v-4h4v4zm0-8h-4V14h4v12z" />
             </svg>
-            <p>Base is required in querystring</p>
+            <p>{props.message}</p>
         </main>
     )
+}
+
+const Loading = (): JSX.Element => {
+    return (
+        <main class="loading">
+            <div class="spinner" />
+        </main>
+    )
+}
+
+const ListItem = ({ record }: { key: string; record: CharacterNameRecord }): JSX.Element => {
+    return (
+        <a class="item" href={`#${record.id}`}>{record.fields.Name}</a>
+    )
+}
+
+/**
+ * Character List
+ */
+interface ListProps {
+    readonly base: string
+    readonly token: string
+}
+
+interface ListState {
+    readonly error?: string
+    readonly characters?: CharacterNameRecord[]
+}
+
+class List extends preact.Component<ListProps, ListState> {
+    public render(_: ListProps, state: ListState): JSX.Element {
+        if (state.error) {
+            return <Err message={state.error} />
+        }
+        if (state.characters) {
+            return (
+                <main class="list">
+                    {state.characters.map((c) => <ListItem key={c.id} record={c} />)}
+                </main>
+            )
+        }
+        return <Loading />
+    }
+
+    public componentWillMount(): void {
+        const url = `${AIRTABLE}/${this.props.base}/Characters?fields[]=Name`
+        fetch(url, {
+            headers: {
+                "Authorization": `Bearer ${this.props.token}`,
+            },
+        }).then((response) => {
+            return response.json().then((value: CharacterListResponse | AirtableErrorResponse) => {
+                if (response.ok) {
+                    this.setState({
+                        characters: (value as CharacterListResponse).records,
+                    })
+                } else {
+                    this.setState({
+                        error: (value as AirtableErrorResponse).error.message,
+                    })
+                }
+
+            })
+
+        })
+    }
 }
 
 /**
  * Application
  */
 interface AppProps {
-    query: Record<string, string>
+    readonly query: Record<string, string>
 }
 
 interface AppState {
@@ -130,9 +214,9 @@ class App extends preact.Component<AppProps, AppState> {
             return <Login authenticate={this._authenticate} />
         }
         if (base === null) {
-            return <MissingBase/>
+            return <Err message="Base is required in querystring" />
         }
-        return <p>{base}</p>
+        return <List base={base} token={token} />
     }
 }
 
