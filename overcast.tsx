@@ -27,6 +27,21 @@ function forceReload(): void {
     location.reload(true)
 }
 
+function get<T>(base: string, token: string, tail: string): Promise<T | string> {
+    const url = [AIRTABLE, base, tail].join("/")
+    return fetch(url, {
+        headers: {
+            "Authorization": `Bearer ${token}`,
+        },
+    }).then((response: Response): Promise<T | string> => {
+        return response.json().then((value: T | AirtableErrorResponse): T | string => {
+            return response.ok
+                ? (value as T)
+                : (value as AirtableErrorResponse).error.message
+        })
+    })
+}
+
 /**
  * Schema
  */
@@ -312,47 +327,32 @@ interface ListProps {
 }
 
 interface ListState {
-    readonly error?: string
-    readonly characters?: CharacterNameRecord[]
+    value?: CharacterListResponse | string;
 }
 
 class List extends preact.Component<ListProps, ListState> {
     public render(_: ListProps, state: ListState): JSX.Element {
-        if (state.error) {
-            return <Err message={state.error} />
+        const value = state.value
+        if (!value) {
+            return <Loading />
         }
-        if (state.characters) {
-            return (
-                <main class="list">
-                    {state.characters.map((c) => {
-                        return <a class="item" href={`#${c.id}`}>{c.fields.Name}</a>
-                    })}
-                </main>
-            )
+        if (typeof value === "string") {
+            return <Err message={value} />
         }
-        return <Loading />
+        return (
+            <main class="list">
+                {value.records.map((c) => {
+                    return <a class="item" href={`#${c.id}`}>{c.fields.Name}</a>
+                })}
+            </main>
+        )
     }
 
     public componentWillMount(): void {
-        const url = `${AIRTABLE}/${this.props.base}/Characters?fields[]=Name`
-        fetch(url, {
-            headers: {
-                "Authorization": `Bearer ${this.props.token}`,
-            },
-        }).then((response) => {
-            return response.json().then((value: CharacterListResponse | AirtableErrorResponse) => {
-                if (response.ok) {
-                    this.setState({
-                        characters: (value as CharacterListResponse).records,
-                    })
-                } else {
-                    this.setState({
-                        error: (value as AirtableErrorResponse).error.message,
-                    })
-                }
-
+        get<CharacterListResponse>(this.props.base, this.props.token, "Characters?fields[]=Name").then((value) => {
+            this.setState({
+                value: value
             })
-
         })
     }
 }
