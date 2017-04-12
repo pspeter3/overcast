@@ -34,11 +34,13 @@ header .icon {
 
 header .title {
   bottom: 1.25rem;
+  color: rgba(0, 0, 0, 0.87);
   font-size: 1.25rem;
   font-weight: 500;
   height: 1.25rem;
   left: 1rem;
   position: absolute;
+  text-decoration: none;
 }
 
 header .upgrade {
