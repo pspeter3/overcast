@@ -52,6 +52,7 @@ header .upgrade {
 fieldset {
   border: none;
   background: #ffffff;
+  margin-bottom: 1rem;
 }
 
 .row {
@@ -74,7 +75,6 @@ fieldset {
   height: 1rem;
   line-height: 1rem;
   position: absolute;
-  text-transform: capitalize;
   top: 1rem;
 }
 
@@ -98,6 +98,11 @@ fieldset {
 .cell select {
   -moz-appearance: none;
   -webkit-appearance: none;
+}
+
+.cell textarea {
+  line-height: 1.5rem;
+  overflow-y: scroll;
 }
 
 .cell input[type="text"]:placeholder, .cell input[type="number"]:placeholder, .cell input[type="password"]:placeholder, .cell select:placeholder, .cell textarea:placeholder {

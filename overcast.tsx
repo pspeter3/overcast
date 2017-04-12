@@ -23,9 +23,13 @@ interface CharacterNameFields {
 
 interface CharacterFields extends CharacterNameFields {
     readonly Descriptor: string
+    readonly Effort: number
     readonly Flavor: string
     readonly Focus: string
+    readonly Limit: number
+    readonly Notes: string
     readonly Type: string
+    readonly XP: number
 }
 
 interface CharacterNameRecord extends AirtableRecord<CharacterNameFields> { }
@@ -211,7 +215,7 @@ const Label = ({ name }: { name: string }): JSX.Element => {
     return <label for={name}>{name}</label>
 }
 
-const TextField = (props: { name: string; } & JSX.HTMLAttributes): JSX.Element => {
+const TextField = (props: { name: string } & JSX.HTMLAttributes): JSX.Element => {
     const name = props.name
     const attrs = props.type
         ? props
@@ -241,6 +245,14 @@ const Select = ({ name, options, value }: { name: string; options: string[]; val
     )
 }
 
+const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.Element => {
+    return (
+        <Cell>
+            <textarea name={name} value={value} />
+            <Label name={name} />
+        </Cell>
+    )
+}
 const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
     const upgrade = props.updateReady
         ? (
@@ -320,21 +332,13 @@ class Character extends preact.Component<CharacterProps, CharacterState> {
         const fields = value.fields
         return (
             <main class="character">
-                <fieldset>
-                    <Row>
-                        <TextField name="name" value={fields.Name} />
-                    </Row>
-                    <Row>
-                        <Select name="descriptor" value={fields.Descriptor} options={DESCRIPTORS} />
-                    </Row>
-                    <Row>
-                        <Select name="flavor" value={fields.Flavor} options={FLAVORS} />
-                        <Select name="type" value={fields.Type} options={TYPES} />
-                    </Row>
-                    <Row>
-                        <Select name="focus" value={fields.Focus} options={FOCI} />
-                    </Row>
-                </fieldset>
+                <section>
+                    {this._overview(fields)}
+                    {this._summary(fields)}
+                    {this._notes(fields)}
+                </section>
+                <section>Stuff</section>
+                <section>Lists</section>
             </main>
         )
     }
@@ -344,6 +348,48 @@ class Character extends preact.Component<CharacterProps, CharacterState> {
         get<CharacterRecord>(props.base, props.token, `Characters/${props.id}`).then((value) => {
             this.setState({ value })
         })
+    }
+
+    private _overview(fields: CharacterFields): JSX.Element {
+        return (
+            <fieldset>
+                <Row>
+                    <TextField name="Name" value={fields.Name} />
+                </Row>
+                <Row>
+                    <Select name="Descriptor" value={fields.Descriptor} options={DESCRIPTORS} />
+                </Row>
+                <Row>
+                    <Select name="Flavor" value={fields.Flavor} options={FLAVORS} />
+                    <Select name="Type" value={fields.Type} options={TYPES} />
+                </Row>
+                <Row>
+                    <Select name="Focus" value={fields.Focus} options={FOCI} />
+                </Row>
+            </fieldset>
+        )
+    }
+
+    private _summary(fields: CharacterFields): JSX.Element {
+        return (
+            <fieldset>
+                <Row>
+                    <TextField name="Effort" value={fields.Effort.toString(10)} type="number" min="0" />
+                    <TextField name="Limit" value={fields.Limit.toString(10)} type="number" min="0" />
+                    <TextField name="XP" value={fields.XP.toString(10)} type="number" min="0" />
+                </Row>
+            </fieldset>
+        )
+    }
+
+    private _notes(fields: CharacterFields): JSX.Element {
+        return (
+            <fieldset>
+                <Row>
+                    <TextArea name="Notes" value={fields.Notes} />
+                </Row>
+            </fieldset>
+        )
     }
 }
 
