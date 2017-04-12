@@ -265,7 +265,7 @@ const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
         : null
     return (
         <header>
-            <span class="title">Overcast</span>
+            <a class="title" href="#">Overcast</a>
             {upgrade}
         </header>
     )
@@ -337,8 +337,6 @@ class Character extends preact.Component<CharacterProps, CharacterState> {
                     {this._summary(fields)}
                     {this._notes(fields)}
                 </section>
-                <section>Stuff</section>
-                <section>Lists</section>
             </main>
         )
     }
