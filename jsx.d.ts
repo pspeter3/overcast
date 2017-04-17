@@ -1,13 +1,13 @@
 declare namespace JSX {
-    export type Primitive = string | boolean | number | void
-    export type Node = Element | string
+    export type Primitive = string | number | boolean | void | EventListener
+    export type Node = Element | string | Element[]
+    export type Factory<P> = Component<P> | string
     export interface Element {
         (): void
     }
     export interface Component<P> {
-        (props: P): Element
+        (props?: P, children?: JSX.Node[]): Element
     }
-    export type Factory<P> = Component<P> | string
     export type HTMLAttributes = Record<string, Primitive>
     export interface IntrinsicElements {
         a: HTMLAttributes

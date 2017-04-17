@@ -1,24 +1,33 @@
 /**
  * Framework
  */
+const idom = IncrementalDOM
+
+function toStatics(attrs: JSX.HTMLAttributes | null): JSX.Primitive[] {
+    if (attrs === null) {
+        return []
+    }
+    return Object.keys(attrs).reduce((statics, key) => {
+        statics.push(key, attrs[key])
+        return statics
+    }, [] as JSX.Primitive[])
+}
+
 function renderNode(node: JSX.Node): void {
     if (typeof node === "string") {
-        console.log(node)
+        idom.text(node)
+    } else if (Array.isArray(node)) {
+        node.forEach(renderNode)
     } else {
         node()
     }
 }
 
 function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, children: JSX.Node[]): void {
-    console.group(tag)
-    console.log("attrs", attrs)
-    const nodes = Array.isArray(children)
-        ? children
-        : [children]
-    nodes.forEach(renderNode)
-    console.groupEnd()
+    idom.elementOpen(tag, undefined, toStatics(attrs))
+    children.forEach(renderNode)
+    idom.elementClose(tag)
 }
-
 
 function createElement<P>(factory: JSX.Factory<P>, attrs: P | JSX.HTMLAttributes | null, ...children: JSX.Node[]): JSX.Element {
     if (typeof factory === "string") {
@@ -26,18 +35,12 @@ function createElement<P>(factory: JSX.Factory<P>, attrs: P | JSX.HTMLAttributes
             renderDomElement(factory, attrs as JSX.HTMLAttributes, children)
         }
     }
-    return factory(attrs as P)
+    return factory(attrs as P, children)
 }
 
-/**
- * Init
- */
-const BASE = window.location.search.substring(1).split("&").reduce((base, segment) => {
-    const pair = segment.split("=")
-    return decodeURIComponent(pair[0]) === "base"
-        ? decodeURIComponent(pair[1])
-        : base
-}, null as string | null)
+function empty(): void {
+    return undefined
+}
 
 /**
  * Constants
@@ -172,10 +175,56 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
+const DATA_KEY = "$data"
+const TOKEN_KEY = "$token"
+
+/**
+ * Handlers
+ */
+function forceReload(): void {
+    window.location.reload(true)
+}
+
+function setItem(key: string, value: string): void {
+    localStorage.setItem(key, value)
+    render()
+}
+
+function authenticate(event: Event): void {
+    event.preventDefault()
+    const target = event.currentTarget as HTMLFormElement
+    const input = target.querySelector("input")
+    if (input) {
+        setItem(TOKEN_KEY, input.value)
+    }
+}
+
+/**
+ * State
+ */
+const BASE = window.location.search.substring(1).split("&").reduce((base, segment) => {
+    const pair = segment.split("=")
+    return decodeURIComponent(pair[0]) === "base"
+        ? decodeURIComponent(pair[1])
+        : base
+}, null as string | null)
+
+let ERR = BASE === null
+    ? "`base` required in querystring"
+    : null
+
+function token(): string | null {
+    return localStorage.getItem(TOKEN_KEY)
+}
+
+function data(): string | null {
+    return localStorage.getItem(DATA_KEY)
+}
+
 /**
  * UI
  */
-const Row = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+const Row = (_: {}, children: JSX.Node[]): JSX.Element => {
     return (
         <div class="row">
             {children}
@@ -183,7 +232,7 @@ const Row = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
     )
 }
 
-const Cell = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+const Cell = (_: {}, children: JSX.Node[]): JSX.Element => {
     return (
         <div class="cell">
             {children}
@@ -234,16 +283,16 @@ const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.E
     )
 }
 
-const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
-    const upgrade = props.updateReady
+const AppBar = (): JSX.Element => {
+    const upgrade = applicationCache.status === applicationCache.UPDATEREADY
         ? (
-            <a class="upgrade icon">
+            <a class="upgrade icon" onclick={forceReload}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14zm-1-6h-3V8h-2v5H8l4 4 4-4z" />
                 </svg>
             </a>
         )
-        : null
+        : empty
     return (
         <header>
             <a class="title" href="#">Overcast</a>
@@ -254,7 +303,7 @@ const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
 
 const Login = (): JSX.Element => {
     return (
-        <form>
+        <form onsubmit={authenticate}>
             <fieldset>
                 <Row>
                     <TextField name="Token" type="password" required inputMode="verbatim" autofocus />
@@ -269,13 +318,13 @@ const Login = (): JSX.Element => {
     )
 }
 
-const Err = (props: { message: string }): JSX.Element => {
+const Err = (): JSX.Element => {
     return (
         <main class="error">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
                 <path d="M24 4C12.96 4 4 12.95 4 24s8.96 20 20 20 20-8.95 20-20S35.04 4 24 4zm2 30h-4v-4h4v4zm0-8h-4V14h4v12z" />
             </svg>
-            <p>{props.message}</p>
+            <p>{ERR}</p>
         </main>
     )
 }
@@ -288,23 +337,39 @@ const Loading = (): JSX.Element => {
     )
 }
 
-/**
- * Handlers
- */
-function forceReload(): void {
-    location.reload(true)
+const Main = (): JSX.Element => {
+    if (ERR !== null) {
+        return <Err />
+    }
+    if (token() === null) {
+        return <Login />
+    }
+    if (data() === null) {
+        return <Loading />
+    }
+    return (<p>Overcast</p>)
 }
 
-function render(): void {
-    const el = BASE === null
-        ? <Err message="Base is required in querystring" />
-        : <Loading />
-    el()
+const App = (): JSX.Element => {
+    return (
+        <div class="app">
+            <AppBar />
+            <Main />
+        </div>
+    )
 }
 
 /**
  * Setup
  */
+function patch(): void {
+    idom.patch(document.body, <App />)
+}
+
+function render(): void {
+    window.requestAnimationFrame(patch)
+}
+
 window.addEventListener("load", render)
 applicationCache.addEventListener("updateready", render)
 window.addEventListener("hashchange", render)

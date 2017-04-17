@@ -5,6 +5,11 @@
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "jsxFactory": "createElement",
+    "lib": [
+      "dom",
+      "es2015",
+      "es2015.promise"
+    ],
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
