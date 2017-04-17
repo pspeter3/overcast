@@ -1,5 +1,5 @@
 declare namespace JSX {
-    export type Primitive = string | boolean | number | void | EventListener
+    export type Primitive = string | boolean | number | void
     export type Element = void
     export type HTMLAttributes = Record<string, Primitive>
     export interface IntrinsicElements {
