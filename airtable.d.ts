@@ -3,14 +3,14 @@ declare namespace Airtable {
         readonly error: { readonly message: string }
     }
 
-    export interface Record<T> {
+    export interface RecordResponse<T> {
         readonly createdTime: string
         readonly fields: T
         readonly id: string
     }
 
-    export interface ListResponse<T extends Record<{}>> {
-        records: T[]
+    export interface ListResponse<T> {
+        records: RecordResponse<T>[]
     }
 
     export interface Collaborator {
@@ -20,7 +20,8 @@ declare namespace Airtable {
     }
 
     export type AbilityId = string
-    export interface AbilityFields {
+    export type Abilities = Record<AbilityId, Ability>
+    export interface Ability {
         readonly Character?: CharacterId[]
         readonly Cost?: number
         readonly Name?: string
@@ -30,7 +31,8 @@ declare namespace Airtable {
     }
 
     export type AdvancementId = string
-    export interface AdvancementFields {
+    export type Advancements = Record<AdvancementId, Advancement>
+    export interface Advancement {
         readonly Character?: string[]
         readonly Edge?: boolean
         readonly Effort?: boolean
@@ -41,7 +43,8 @@ declare namespace Airtable {
     }
 
     export type ArmorId = string
-    export interface ArmorFields {
+    export type Armors = Record<ArmorId, Armor>
+    export interface Armor {
         readonly Bonus?: string
         readonly Category?: string
         readonly Character?: CharacterId[]
@@ -49,7 +52,8 @@ declare namespace Airtable {
     }
 
     export type AttackId = string
-    export interface AttackFields {
+    export type Attacks = Record<AttackId, Attack>
+    export interface Attack {
         readonly Character?: CharacterId[]
         readonly Damage?: number
         readonly Distinction?: string
@@ -59,7 +63,8 @@ declare namespace Airtable {
     }
 
     export type CharacterId = string
-    export interface CharacterFields {
+    export type Characters = Record<CharacterId, Character>
+    export interface Character {
         readonly Abilities: AbilityId[]
         readonly Advancement: AdvancementId[]
         readonly Armor: ArmorId[]
@@ -83,7 +88,8 @@ declare namespace Airtable {
     }
 
     export type CypherId = string
-    export interface CypherFields {
+    export type Cyphers = Record<CypherId, Cypher>
+    export interface Cypher {
         readonly Character?: CharacterId[]
         readonly Effect?: string
         readonly Level?: number
@@ -91,7 +97,8 @@ declare namespace Airtable {
     }
 
     export type EffectId = string
-    export interface EffectFields {
+    export type Effects = Record<EffectId, Effect>
+    export interface Effect {
         readonly Character?: CharacterId[]
         readonly ID?: string
         readonly Level?: string
@@ -99,14 +106,16 @@ declare namespace Airtable {
     }
 
     export type EquipmentId = string
-    export interface EquipmentFields {
+    export type Equipments = Record<EquipmentId, Equipment>
+    export interface Equipment {
         readonly Character?: CharacterId[]
         readonly Name?: string
         readonly Notes?: string
     }
 
     export type SkillId = string
-    export interface SkillFields {
+    export type Skills = Record<SkillId, Skill>
+    export interface Skill {
         readonly Character?: CharacterId[]
         readonly Level?: string
         readonly Name?: string
@@ -114,7 +123,8 @@ declare namespace Airtable {
     }
 
     export type StatId = string
-    export interface StatFields {
+    export type Stats = Record<StatId, Stat>
+    export interface Stat {
         readonly Character: CharacterId[]
         readonly Edge?: Number
         readonly ID?: string
@@ -122,4 +132,30 @@ declare namespace Airtable {
         readonly Stat?: string
         readonly Value?: Number
     }
+
+    export interface Schema {
+        Abilities: Abilities
+        Advancements: Advancements
+        Armor: Armors
+        Attacks: Attacks
+        Characters: Characters
+        Cyphers: Cyphers
+        Effects: Effects
+        Equipment: Equipments
+        Skills: Skills
+        Stats: Stats
+    }
+
+    export type TableList = [
+        Abilities,
+        Advancements,
+        Armors,
+        Attacks,
+        Characters,
+        Cyphers,
+        Effects,
+        Equipments,
+        Skills,
+        Stats
+    ]
 }

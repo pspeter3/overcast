@@ -3,16 +3,6 @@
  */
 const idom = IncrementalDOM
 
-function toStatics(attrs: JSX.HTMLAttributes | null): JSX.Primitive[] {
-    if (attrs === null) {
-        return []
-    }
-    return Object.keys(attrs).reduce((statics, key) => {
-        statics.push(key, attrs[key])
-        return statics
-    }, [] as JSX.Primitive[])
-}
-
 function renderNode(node: JSX.Node): void {
     if (typeof node === "string") {
         idom.text(node)
@@ -24,7 +14,22 @@ function renderNode(node: JSX.Node): void {
 }
 
 function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, children: JSX.Node[]): void {
-    idom.elementOpen(tag, undefined, toStatics(attrs))
+    let key: string | undefined = undefined
+    const statics: JSX.Attribute[] = []
+    if (attrs != null) {
+        Object.keys(attrs).forEach((k) => {
+            const value = attrs[k]
+            if (k === "key") {
+                key = typeof value === "undefined"
+                    ? value
+                    : value.toString()
+            } else {
+                statics.push(k, value)
+            }
+        })
+    }
+    idom.elementOpenStart(tag, key, statics)
+    idom.elementOpenEnd()
     children.forEach(renderNode)
     idom.elementClose(tag)
 }
@@ -175,16 +180,48 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
-const BASE = "app3twwgtlOjlzeLy"
+const BASE = "https://api.airtable.com/v0/app3twwgtlOjlzeLy"
 const DATA_KEY = "$data"
 const TOKEN_KEY = "$token"
 
 /**
  * Handlers
  */
+function toRecord<K extends string, V>(records: Record<K, V>, record: Airtable.RecordResponse<V>): Record<K, V> {
+    records[(record.id as K)] = record.fields
+    return records
+}
+
 function setItem(key: string, value: string): void {
     localStorage.setItem(key, value)
     render()
+}
+
+function fetchTable<K extends string, V>(table: string): Promise<Record<K, V>> {
+    const auth = token()
+    if (auth === null) {
+        return Promise.reject("Unauthenticated")
+    }
+    return fetch(`${BASE}/${table}`, {
+        headers: {
+            "Authorization": `Bearer ${auth}`,
+        },
+    }).then((response: Response): Promise<Record<K, V>> => {
+        return response.json().then((value: Airtable.ListResponse<V> | Airtable.Error): Record<K, V> => {
+            if (!response.ok) {
+                throw new Error((value as Airtable.Error).error.message)
+            }
+            return (value as Airtable.ListResponse<V>).records.reduce((records, record) => {
+                records[(record.id as K)] = record.fields
+                return records
+            }, ({} as Record<K, V>))
+        })
+    })
+}
+
+function upgrade(): void {
+    applicationCache.swapCache()
+    location.reload(true)
 }
 
 function authenticate(event: Event): void {
@@ -196,9 +233,38 @@ function authenticate(event: Event): void {
     }
 }
 
-function upgrade(): void {
-    applicationCache.swapCache()
-    location.reload(true)
+function onError(err: Error): void {
+    ERR = err.message
+    render()
+}
+
+function fetchData(): void {
+    Promise.all([
+        fetchTable<Airtable.AbilityId, Airtable.Ability>("Abilities"),
+        fetchTable<Airtable.AdvancementId, Airtable.Advancement>("Advancement"),
+        fetchTable<Airtable.ArmorId, Airtable.Armor>("Armor"),
+        fetchTable<Airtable.AttackId, Airtable.Attack>("Attacks"),
+        fetchTable<Airtable.CharacterId, Airtable.Character>("Characters"),
+        fetchTable<Airtable.CypherId, Airtable.Cypher>("Cyphers"),
+        fetchTable<Airtable.EffectId, Airtable.Effect>("Effects"),
+        fetchTable<Airtable.EquipmentId, Airtable.Equipment>("Equipment"),
+        fetchTable<Airtable.SkillId, Airtable.Skill>("Skills"),
+        fetchTable<Airtable.StatId, Airtable.Stat>("Stats")
+    ]).then((values: Airtable.TableList) => {
+        const data: Airtable.Schema = {
+            Abilities: values[0],
+            Advancements: values[1],
+            Armor: values[2],
+            Attacks: values[3],
+            Characters: values[4],
+            Cyphers: values[5],
+            Effects: values[6],
+            Equipment: values[7],
+            Skills: values[8],
+            Stats: values[9]
+        }
+        setItem(DATA_KEY, JSON.stringify(data))
+    }).catch(onError)
 }
 
 /**
@@ -210,8 +276,11 @@ function token(): string | null {
     return localStorage.getItem(TOKEN_KEY)
 }
 
-function data(): string | null {
-    return localStorage.getItem(DATA_KEY)
+function data(): Airtable.Schema | null {
+    const value = localStorage.getItem(DATA_KEY)
+    return value === null
+        ? value
+        : JSON.parse(value)
 }
 
 /**
@@ -312,6 +381,14 @@ const Login = (): JSX.Element => {
     )
 }
 
+const Loading = (): JSX.Element => {
+    return (
+        <main class="loading">
+            <div class="spinner" />
+        </main>
+    )
+}
+
 const Err = (): JSX.Element => {
     return (
         <main class="error">
@@ -323,10 +400,18 @@ const Err = (): JSX.Element => {
     )
 }
 
-const Loading = (): JSX.Element => {
+interface View {
+    (props: { store: Airtable.Schema }): JSX.Element
+}
+
+const List: View = (props) => {
+    const characters = props.store.Characters
     return (
-        <main class="loading">
-            <div class="spinner" />
+        <main class="list">
+            {Object.keys(characters).map((id) => {
+                const character = characters[id]
+                return <a class="item" href={`#${id}`}>{character.Name}</a>
+            })}
         </main>
     )
 }
@@ -338,13 +423,14 @@ const Main = (): JSX.Element => {
     if (token() === null) {
         return <Login />
     }
-    if (data() === null) {
+    const store = data()
+    if (store === null) {
         return <Loading />
     }
     if (ERR !== null) {
         return <Err />
     }
-    return (<p>Overcast</p>)
+    return <List store={store} />
 }
 
 const App = (): JSX.Element => {
@@ -368,6 +454,7 @@ function render(): void {
 }
 
 window.addEventListener("load", render)
+window.addEventListener("load", fetchData)
 applicationCache.addEventListener("updateready", render)
 window.addEventListener("hashchange", render)
 window.addEventListener("storage", render)
