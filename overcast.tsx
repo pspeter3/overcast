@@ -1,13 +1,43 @@
 /**
  * Framework
  */
-function createElement(tag: string, attrs: Record<string, string>, children: {}[]): JSX.Element {
-    console.log(tag, attrs, children)
+function renderNode(node: JSX.Node): void {
+    if (typeof node === "string") {
+        console.log(node)
+    } else {
+        node()
+    }
 }
 
-function forceReload(): void {
-    location.reload(true)
+function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, children: JSX.Node[]): void {
+    console.group(tag)
+    console.log("attrs", attrs)
+    const nodes = Array.isArray(children)
+        ? children
+        : [children]
+    nodes.forEach(renderNode)
+    console.groupEnd()
 }
+
+
+function createElement<P>(factory: JSX.Factory<P>, attrs: P | JSX.HTMLAttributes | null, ...children: JSX.Node[]): JSX.Element {
+    if (typeof factory === "string") {
+        return () => {
+            renderDomElement(factory, attrs as JSX.HTMLAttributes, children)
+        }
+    }
+    return factory(attrs as P)
+}
+
+/**
+ * Init
+ */
+const BASE = window.location.search.substring(1).split("&").reduce((base, segment) => {
+    const pair = segment.split("=")
+    return decodeURIComponent(pair[0]) === "base"
+        ? decodeURIComponent(pair[1])
+        : base
+}, null as string | null)
 
 /**
  * Constants
@@ -203,6 +233,7 @@ const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.E
         </Cell>
     )
 }
+
 const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
     const upgrade = props.updateReady
         ? (
@@ -258,13 +289,23 @@ const Loading = (): JSX.Element => {
 }
 
 /**
- * Init
+ * Handlers
  */
-window.addEventListener("load", () => {
-    const query = window.location.search.substring(1).split("&").reduce((q, segment) => {
-        const pair = segment.split("=")
-        q[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1])
-        return q
-    }, {} as Record<string, string>)
-    console.log(query)
-})
+function forceReload(): void {
+    location.reload(true)
+}
+
+function render(): void {
+    const el = BASE === null
+        ? <Err message="Base is required in querystring" />
+        : <Loading />
+    el()
+}
+
+/**
+ * Setup
+ */
+window.addEventListener("load", render)
+applicationCache.addEventListener("updateready", render)
+window.addEventListener("hashchange", render)
+window.addEventListener("storage", render)
