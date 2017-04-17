@@ -1,5 +1,7 @@
 # Artifacts
 dist
+*.css
+*.css.map
 *.js
 *.js.map
 
