@@ -1,0 +1,244 @@
+/**
+ * Variables
+ */
+$accent-color: #ffc107;
+$background-color: #fafafa;
+$border-color: rgba(0, 0, 0, 0.12);
+$container-background-color: #ffffff;
+$error-color: rgba(244, 67, 54, 0.87);
+$font-accent-color: rgba(255, 255, 255, 1);
+$font-color: rgba(0, 0, 0, 0.87);
+$font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+$font-size: 1rem;
+$font-weight-medium: 500;
+$header-background-color: #f5f5f5;
+$help-text-color: rgba(0, 0, 0, 0.38);
+$primary-color: rgba(96,125,139, 0.87);
+$rem-base: 16;
+
+/**
+ * Functions
+ */
+@function rem($px) {
+  @return ($px / $rem-base) * 1rem;
+}
+
+/**
+ * Mixins
+ */
+@mixin text-size-adjust() {
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+@mixin screen() {
+  padding-top: rem(72);
+  text-align: center;
+}
+
+/**
+ * Reset
+ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Body
+ */
+body {
+  @include text-size-adjust();
+  background-color: $background-color;
+  color: $font-color;
+  font-family: $font-family;
+  font-size: $font-size;
+  overflow-x: hidden;
+}
+
+/**
+ * AppBar
+ */
+header {
+  background-color: $header-background-color;
+  height: rem(56);
+  margin-bottom: rem(8);
+  position: relative;
+
+  .icon {
+    height: rem(24);
+    position: absolute;
+    text-align: center;
+    width: rem(24);
+  }
+
+  .title {
+    bottom: rem(20);
+    color: $font-color;
+    font-size: rem(20);
+    font-weight: $font-weight-medium;
+    left: rem(16);
+    position: absolute;
+    text-decoration: none;
+  }
+
+  .upgrade {
+    right: rem(16);
+    top: rem(16);
+  }
+}
+
+/**
+ * Loading
+ */
+.loading {
+  @include screen();
+
+  .spinner {
+    height: rem(24);
+    width: rem(24);
+    animation: rotate 0.8s infinite linear;
+    border: rem(4) solid $primary-color;
+    border-right-color: transparent;
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+}
+
+@keyframes rotate {
+  0%    { transform: rotate(0deg); }
+  100%  { transform: rotate(360deg); }
+}
+
+/**
+ * Errors
+ */
+.error {
+  @include screen();
+  color: $error-color;
+
+  svg {
+    fill: $error-color;
+    height: rem(72);
+    stroke: $error-color;
+  }
+
+  p {
+    line-height: rem(24);
+  }
+}
+
+/**
+ * List
+ */
+.list {
+  background-color: $container-background-color;
+
+  a.item {
+    color: $font-color;
+    display: block;
+    height: rem(48);
+    padding: rem(8) rem(16) rem(24) rem(16);
+    text-decoration: none;
+  }
+}
+
+/**
+ * Forms
+ */
+fieldset {
+  background: $container-background-color;
+  border: none;
+  margin-bottom: rem(16);
+}
+
+.row {
+  display: flex;
+  padding: 0 rem(8);
+  width: 100%;
+}
+
+.cell {
+  flex: 1;
+  height: rem(72);
+  margin: 0 rem(8);
+  position: relative;
+
+  label {
+    color: $help-text-color;
+    display: block;
+    font-size: rem(12);
+    height: rem(16);
+    line-height: rem(16);
+    position: absolute;
+    top: rem(16);
+  }
+
+  input[type="text"], input[type="number"], input[type="password"], select, textarea {
+    background: none;
+    border: none;
+    border-bottom: rem(1) solid $border-color;
+    border-radius: 0;
+    box-shadow: none;
+    color: $font-color;
+    display: block;
+    font-size: rem(16);
+    height: rem(32);
+    line-height: rem(16);
+    padding-bottom: rem(8) - rem(1);
+    position: absolute;
+    top: rem(40);
+    width: 100%;
+
+    &:placeholder {
+      color: $help-text-color;
+    }
+
+    &:focus {
+      border-bottom-color: $primary-color;
+      border-bottom-width: rem(2);
+      outline: none;
+      padding-bottom: rem(8) - rem(2);
+
+      & + label {
+        color: $primary-color;
+      }
+    }
+
+    &:invalid {
+      border-bottom-color: $error-color;
+
+      & + label {
+        color: $error-color;
+      }
+    }
+  }
+
+  select {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+  }
+
+  textarea {
+    line-height: rem(24);
+    overflow-y: scroll;
+  }
+
+  button {
+    background-color: $accent-color;
+    border-radius: rem(2);
+    border: none;
+    color: $font-accent-color;
+    display: block;
+    font-size: rem(14);
+    font-weight: $font-weight-medium;
+    height: rem(36);
+    margin: 0 auto;
+    padding: 0 rem(16);
+    position: relative;
+    text-transform: uppercase;
+    top: rem(18);
+  }
+}

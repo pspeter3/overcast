@@ -276,7 +276,7 @@ const Login = (props: { authenticate: EventListener }): JSX.Element => {
         <form onSubmit={props.authenticate}>
             <fieldset>
                 <Row>
-                    <TextField name="token" type="password" required inputMode="verbatim" autofocus />
+                    <TextField name="Token" type="password" required inputMode="verbatim" autofocus />
                 </Row>
                 <Row>
                     <Cell>
