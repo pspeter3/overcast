@@ -1,67 +1,49 @@
-/// <reference path="./airtable.d.ts"/>
 /**
  * Framework
  */
-type Maybe<T> = T | null
+const idom = IncrementalDOM
 
-interface AirtableErrorResponse {
-    readonly error: { readonly message: string }
+function toStatics(attrs: JSX.HTMLAttributes | null): JSX.Primitive[] {
+    if (attrs === null) {
+        return []
+    }
+    return Object.keys(attrs).reduce((statics, key) => {
+        statics.push(key, attrs[key])
+        return statics
+    }, [] as JSX.Primitive[])
 }
 
-interface AirtableRecord<T> {
-    readonly id: string
-    readonly fields: T
-    readonly createdTime: string
+function renderNode(node: JSX.Node): void {
+    if (typeof node === "string") {
+        idom.text(node)
+    } else if (Array.isArray(node)) {
+        node.forEach(renderNode)
+    } else {
+        node()
+    }
 }
 
-interface AirtableListResponse<T extends AirtableRecord<{}>> {
-    records: T[]
+function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, children: JSX.Node[]): void {
+    idom.elementOpen(tag, undefined, toStatics(attrs))
+    children.forEach(renderNode)
+    idom.elementClose(tag)
 }
 
-interface CharacterNameFields {
-    readonly Name: string
+function createElement<P>(factory: JSX.Factory<P>, attrs: P | JSX.HTMLAttributes | null, ...children: JSX.Node[]): JSX.Element {
+    if (typeof factory === "string") {
+        return () => {
+            renderDomElement(factory, attrs as JSX.HTMLAttributes, children)
+        }
+    }
+    return factory(attrs as P, children)
 }
 
-interface CharacterFields extends CharacterNameFields {
-    readonly Descriptor: string
-    readonly Effort: number
-    readonly Flavor: string
-    readonly Focus: string
-    readonly Limit: number
-    readonly Notes: string
-    readonly Type: string
-    readonly XP: number
-}
-
-interface CharacterNameRecord extends AirtableRecord<CharacterNameFields> { }
-interface CharacterListResponse extends AirtableListResponse<CharacterNameRecord> { }
-
-interface CharacterRecord extends AirtableRecord<CharacterFields> { }
-
-const AIRTABLE = "https://api.airtable.com/v0"
-const TOKEN_KEY = "$token"
-
-function forceReload(): void {
-    location.reload(true)
-}
-
-function get<T>(base: string, token: string, tail: string): Promise<T | string> {
-    const url = [AIRTABLE, base, tail].join("/")
-    return fetch(url, {
-        headers: {
-            "Authorization": `Bearer ${token}`,
-        },
-    }).then((response: Response): Promise<T | string> => {
-        return response.json().then((value: T | AirtableErrorResponse): T | string => {
-            return response.ok
-                ? (value as T)
-                : (value as AirtableErrorResponse).error.message
-        })
-    })
+function empty(): void {
+    return undefined
 }
 
 /**
- * Schema
+ * Constants
  */
 const DESCRIPTORS = [
     "Appealing",
@@ -193,10 +175,56 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
+const DATA_KEY = "$data"
+const TOKEN_KEY = "$token"
+
+/**
+ * Handlers
+ */
+function forceReload(): void {
+    window.location.reload(true)
+}
+
+function setItem(key: string, value: string): void {
+    localStorage.setItem(key, value)
+    render()
+}
+
+function authenticate(event: Event): void {
+    event.preventDefault()
+    const target = event.currentTarget as HTMLFormElement
+    const input = target.querySelector("input")
+    if (input) {
+        setItem(TOKEN_KEY, input.value)
+    }
+}
+
+/**
+ * State
+ */
+const BASE = window.location.search.substring(1).split("&").reduce((base, segment) => {
+    const pair = segment.split("=")
+    return decodeURIComponent(pair[0]) === "base"
+        ? decodeURIComponent(pair[1])
+        : base
+}, null as string | null)
+
+let ERR = BASE === null
+    ? "`base` required in querystring"
+    : null
+
+function token(): string | null {
+    return localStorage.getItem(TOKEN_KEY)
+}
+
+function data(): string | null {
+    return localStorage.getItem(DATA_KEY)
+}
+
 /**
  * UI
  */
-const Row = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+const Row = (_: {}, children: JSX.Node[]): JSX.Element => {
     return (
         <div class="row">
             {children}
@@ -204,7 +232,7 @@ const Row = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
     )
 }
 
-const Cell = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+const Cell = (_: {}, children: JSX.Node[]): JSX.Element => {
     return (
         <div class="cell">
             {children}
@@ -254,16 +282,17 @@ const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.E
         </Cell>
     )
 }
-const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
-    const upgrade = props.updateReady
+
+const AppBar = (): JSX.Element => {
+    const upgrade = applicationCache.status === applicationCache.UPDATEREADY
         ? (
-            <a class="upgrade icon" onClick={forceReload}>
+            <a class="upgrade icon" onclick={forceReload}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14zm-1-6h-3V8h-2v5H8l4 4 4-4z" />
                 </svg>
             </a>
         )
-        : null
+        : empty
     return (
         <header>
             <a class="title" href="#">Overcast</a>
@@ -272,9 +301,9 @@ const AppBar = (props: { updateReady?: boolean }): JSX.Element => {
     )
 }
 
-const Login = (props: { authenticate: EventListener }): JSX.Element => {
+const Login = (): JSX.Element => {
     return (
-        <form onSubmit={props.authenticate}>
+        <form onsubmit={authenticate}>
             <fieldset>
                 <Row>
                     <TextField name="Token" type="password" required inputMode="verbatim" autofocus />
@@ -289,13 +318,13 @@ const Login = (props: { authenticate: EventListener }): JSX.Element => {
     )
 }
 
-const Err = (props: { message: string }): JSX.Element => {
+const Err = (): JSX.Element => {
     return (
         <main class="error">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
                 <path d="M24 4C12.96 4 4 12.95 4 24s8.96 20 20 20 20-8.95 20-20S35.04 4 24 4zm2 30h-4v-4h4v4zm0-8h-4V14h4v12z" />
             </svg>
-            <p>{props.message}</p>
+            <p>{ERR}</p>
         </main>
     )
 }
@@ -308,222 +337,40 @@ const Loading = (): JSX.Element => {
     )
 }
 
-/**
- * Character Sheet
- */
-interface CharacterProps {
-    readonly base: string
-    readonly id: string
-    readonly token: string
+const Main = (): JSX.Element => {
+    if (ERR !== null) {
+        return <Err />
+    }
+    if (token() === null) {
+        return <Login />
+    }
+    if (data() === null) {
+        return <Loading />
+    }
+    return (<p>Overcast</p>)
 }
 
-interface CharacterState {
-    value?: CharacterRecord | string
-}
-
-class Character extends preact.Component<CharacterProps, CharacterState> {
-    public render(_: CharacterProps, state: CharacterState): JSX.Element {
-        const value = state.value
-        if (!value) {
-            return <Loading />
-        }
-        if (typeof value === "string") {
-            return <Err message={value} />
-        }
-        const fields = value.fields
-        return (
-            <main class="character">
-                <section>
-                    {this._overview(fields)}
-                    {this._summary(fields)}
-                    {this._notes(fields)}
-                </section>
-            </main>
-        )
-    }
-
-    public componentWillMount(): void {
-        const props = this.props
-        get<CharacterRecord>(props.base, props.token, `Characters/${props.id}`).then((value) => {
-            this.setState({ value })
-        })
-    }
-
-    private _overview(fields: CharacterFields): JSX.Element {
-        return (
-            <fieldset>
-                <Row>
-                    <TextField name="Name" value={fields.Name} />
-                </Row>
-                <Row>
-                    <Select name="Descriptor" value={fields.Descriptor} options={DESCRIPTORS} />
-                </Row>
-                <Row>
-                    <Select name="Flavor" value={fields.Flavor} options={FLAVORS} />
-                    <Select name="Type" value={fields.Type} options={TYPES} />
-                </Row>
-                <Row>
-                    <Select name="Focus" value={fields.Focus} options={FOCI} />
-                </Row>
-            </fieldset>
-        )
-    }
-
-    private _summary(fields: CharacterFields): JSX.Element {
-        return (
-            <fieldset>
-                <Row>
-                    <TextField name="Effort" value={fields.Effort.toString(10)} type="number" min="0" />
-                    <TextField name="Limit" value={fields.Limit.toString(10)} type="number" min="0" />
-                    <TextField name="XP" value={fields.XP.toString(10)} type="number" min="0" />
-                </Row>
-            </fieldset>
-        )
-    }
-
-    private _notes(fields: CharacterFields): JSX.Element {
-        return (
-            <fieldset>
-                <Row>
-                    <TextArea name="Notes" value={fields.Notes} />
-                </Row>
-            </fieldset>
-        )
-    }
+const App = (): JSX.Element => {
+    return (
+        <div class="app">
+            <AppBar />
+            <Main />
+        </div>
+    )
 }
 
 /**
- * Character List
+ * Setup
  */
-interface ListProps {
-    readonly base: string
-    readonly token: string
+function patch(): void {
+    idom.patch(document.body, <App />)
 }
 
-interface ListState {
-    value?: CharacterListResponse | string
+function render(): void {
+    window.requestAnimationFrame(patch)
 }
 
-class List extends preact.Component<ListProps, ListState> {
-    public render(_: ListProps, state: ListState): JSX.Element {
-        const value = state.value
-        if (!value) {
-            return <Loading />
-        }
-        if (typeof value === "string") {
-            return <Err message={value} />
-        }
-        return (
-            <main class="list">
-                {value.records.map((c) => {
-                    return <a class="item" href={`#${c.id}`}>{c.fields.Name}</a>
-                })}
-            </main>
-        )
-    }
-
-    public componentWillMount(): void {
-        get<CharacterListResponse>(this.props.base, this.props.token, "Characters?fields[]=Name").then((value) => {
-            this.setState({ value })
-        })
-    }
-}
-
-/**
- * Application
- */
-interface AppProps {
-    readonly query: Record<string, string>
-}
-
-interface AppState {
-    readonly hash: string
-    readonly token: Maybe<string>
-    readonly updateReady?: boolean
-}
-
-class App extends preact.Component<AppProps, AppState> {
-    public state: AppState = {
-        hash: this._hash(),
-        token: this._token(),
-    }
-
-    public render(): JSX.Element {
-        return (
-            <div class="app">
-                <AppBar updateReady={this.state.updateReady} />
-                {this._main()}
-            </div>
-        )
-    }
-
-    public componentWillMount(): void {
-        applicationCache.addEventListener("updateready", this._updateState)
-        window.addEventListener("hashchange", this._updateState)
-        window.addEventListener("storage", this._updateState)
-    }
-
-    public componentWillUnmount(): void {
-        applicationCache.removeEventListener("updateready", this._updateState)
-        window.removeEventListener("hashchange", this._updateState)
-        window.removeEventListener("storage", this._updateState)
-    }
-
-    private _authenticate = (evt: Event): void => {
-        evt.preventDefault()
-        const target = evt.currentTarget as HTMLFormElement
-        const input = target.querySelector("input")
-        if (input) {
-            localStorage.setItem(TOKEN_KEY, input.value)
-            this._updateState()
-        }
-    }
-
-    private _updateState = (): void => {
-        this.setState({
-            hash: this._hash(),
-            token: this._token(),
-            updateReady: applicationCache.status === applicationCache.UPDATEREADY,
-        })
-    }
-
-    private _base(): Maybe<string> {
-        return this.props.query["base"] || null
-    }
-
-    private _token(): Maybe<string> {
-        return localStorage.getItem(TOKEN_KEY)
-    }
-
-    private _hash(): string {
-        return window.location.hash.substring(1)
-    }
-
-    private _main(): JSX.Element {
-        const base = this._base()
-        const token = this.state.token
-        const hash = this.state.hash
-        if (token === null) {
-            return <Login authenticate={this._authenticate} />
-        }
-        if (base === null) {
-            return <Err message="Base is required in querystring" />
-        }
-        if (hash.length === 0) {
-            return <List base={base} token={token} />
-        }
-        return <Character base={base} id={hash} token={token} />
-    }
-}
-
-/**
- * Init
- */
-window.addEventListener("load", () => {
-    const query = window.location.search.substring(1).split("&").reduce((q, segment) => {
-        const pair = segment.split("=")
-        q[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1])
-        return q
-    }, {} as Record<string, string>)
-    preact.render(<App query={query} />, document.body)
-})
+window.addEventListener("load", render)
+applicationCache.addEventListener("updateready", render)
+window.addEventListener("hashchange", render)
+window.addEventListener("storage", render)

@@ -58,7 +58,7 @@
       true,
       "allow-declarations"
     ],
-    "no-reference": false,
+    "no-reference": true,
     "no-require-imports": true,
     "no-shadowed-variable": true,
     "no-trailing-whitespace": true,
