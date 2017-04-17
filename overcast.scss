@@ -26,15 +26,14 @@ $rem-base: 16;
 /**
  * Mixins
  */
-@mixin text-size-adjust() {
-  -moz-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-}
+@mixin icon-screen($color) {
+  color: $color;
 
-@mixin screen() {
-  padding-top: rem(72);
-  text-align: center;
+  svg {
+    fill: $color;
+    height: rem(72);
+    stroke: $color;
+  }
 }
 
 /**
@@ -50,12 +49,14 @@ $rem-base: 16;
  * Body
  */
 body {
-  @include text-size-adjust();
   background-color: $background-color;
   color: $font-color;
   font-family: $font-family;
   font-size: $font-size;
   overflow-x: hidden;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 /**
@@ -83,10 +84,17 @@ header {
     position: absolute;
     text-decoration: none;
   }
+}
 
-  .upgrade {
-    right: rem(16);
-    top: rem(16);
+/**
+ * Screens
+ */
+.loading, .error, .upgrade {
+  padding-top: rem(72);
+  text-align: center;
+
+  & p {
+    line-height: rem(24);
   }
 }
 
@@ -94,8 +102,6 @@ header {
  * Loading
  */
 .loading {
-  @include screen();
-
   .spinner {
     height: rem(24);
     width: rem(24);
@@ -116,18 +122,14 @@ header {
  * Errors
  */
 .error {
-  @include screen();
-  color: $error-color;
+  @include icon-screen($error-color);
+}
 
-  svg {
-    fill: $error-color;
-    height: rem(72);
-    stroke: $error-color;
-  }
-
-  p {
-    line-height: rem(24);
-  }
+/**
+ * Upgrade
+ */
+.upgrade {
+  @include icon-screen($accent-color);
 }
 
 /**

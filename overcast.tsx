@@ -175,16 +175,13 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
+const BASE = "app3twwgtlOjlzeLy"
 const DATA_KEY = "$data"
 const TOKEN_KEY = "$token"
 
 /**
  * Handlers
  */
-function forceReload(): void {
-    window.location.reload(true)
-}
-
 function setItem(key: string, value: string): void {
     localStorage.setItem(key, value)
     render()
@@ -199,19 +196,15 @@ function authenticate(event: Event): void {
     }
 }
 
+function upgrade(): void {
+    applicationCache.swapCache()
+    location.reload(true)
+}
+
 /**
  * State
  */
-const BASE = window.location.search.substring(1).split("&").reduce((base, segment) => {
-    const pair = segment.split("=")
-    return decodeURIComponent(pair[0]) === "base"
-        ? decodeURIComponent(pair[1])
-        : base
-}, null as string | null)
-
-let ERR = BASE === null
-    ? "`base` required in querystring"
-    : null
+let ERR: string | null = null
 
 function token(): string | null {
     return localStorage.getItem(TOKEN_KEY)
@@ -284,20 +277,21 @@ const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.E
 }
 
 const AppBar = (): JSX.Element => {
-    const upgrade = applicationCache.status === applicationCache.UPDATEREADY
-        ? (
-            <a class="upgrade icon" onclick={forceReload}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14zm-1-6h-3V8h-2v5H8l4 4 4-4z" />
-                </svg>
-            </a>
-        )
-        : empty
     return (
         <header>
             <a class="title" href="#">Overcast</a>
-            {upgrade}
         </header>
+    )
+}
+
+const Upgrade = (): JSX.Element => {
+    return (
+        <main class="upgrade" onclick={upgrade}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14zm-1-6h-3V8h-2v5H8l4 4 4-4z" />
+            </svg>
+            <p>Upgrade Available</p>
+        </main>
     )
 }
 
@@ -338,14 +332,17 @@ const Loading = (): JSX.Element => {
 }
 
 const Main = (): JSX.Element => {
-    if (ERR !== null) {
-        return <Err />
+    if (applicationCache.status === applicationCache.UPDATEREADY) {
+        return <Upgrade />
     }
     if (token() === null) {
         return <Login />
     }
     if (data() === null) {
         return <Loading />
+    }
+    if (ERR !== null) {
+        return <Err />
     }
     return (<p>Overcast</p>)
 }
