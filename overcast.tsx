@@ -1,3 +1,4 @@
+/// <reference path="./airtable.d.ts"/>
 /**
  * Framework
  */
