@@ -59,11 +59,23 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+main {
+  flex: 1;
+}
+
 /**
  * AppBar
  */
 header {
   background-color: $primary-color;
+  flex: 0 1 auto;
   height: rem(56);
   margin-bottom: rem(8);
   padding: rem(16);
@@ -295,5 +307,6 @@ legend {
   section {
     flex: 1;
     margin: 0 rem(8) rem(8);
+    overflow-y: scroll;
   }
 }
