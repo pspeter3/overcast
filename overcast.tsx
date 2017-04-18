@@ -380,7 +380,7 @@ const Upgrade = (): JSX.Element => {
 const Login = (): JSX.Element => {
     return (
         <form onsubmit={authenticate}>
-            <fieldset class="container">
+            <fieldset>
                 <Row>
                     <TextField name="Token" type="password" required inputMode="verbatim" autofocus />
                 </Row>
@@ -427,7 +427,8 @@ const List = ({ store }: { store: Airtable.Schema }): JSX.Element => {
 
 const Overview = ({ character }: { character: Airtable.Character }): JSX.Element => {
     return (
-        <fieldset class="container">
+        <fieldset>
+            <legend>Overview</legend>
             <Row>
                 <TextField name="Name" value={character.Name} />
             </Row>
@@ -447,7 +448,8 @@ const Overview = ({ character }: { character: Airtable.Character }): JSX.Element
 
 const Summary = ({ character }: { character: Airtable.Character }): JSX.Element => {
     return (
-        <fieldset class="container">
+        <fieldset>
+            <legend>Summary</legend>
             <Row>
                 <TextField name="Effort" value={character.Effort} type="number" min="0" />
                 <TextField name="Limit" value={character.Limit} type="number" min="0" />
@@ -485,19 +487,21 @@ const Stats = ({ character, store }: { character: Airtable.Character, store: Air
         return statSortKey(store.Stats[left].Stat) - statSortKey(store.Stats[right].Stat)
     })
     return (
-        <div class="container">
+        <fieldset>
+            <legend>Stats</legend>
             <Row>
                 {ids.map((id) => {
                     return <Stat stat={store.Stats[id]} />
                 })}
             </Row>
-        </div>
+        </fieldset>
     )
 }
 
-const Notes = ({ character }: { character: Airtable.Character }): JSX.Element => {
+const Flavor = ({ character }: { character: Airtable.Character }): JSX.Element => {
     return (
-        <fieldset class="container">
+        <fieldset>
+            <legend>Flavor</legend>
             <Row>
                 <TextArea name="Notes" value={character.Notes} />
             </Row>
@@ -517,11 +521,12 @@ const Attack = ({ attack }: { attack: Airtable.Attack }): JSX.Element => {
 }
 const Attacks = ({ character, store }: { character: Airtable.Character, store: Airtable.Schema }): JSX.Element => {
     return (
-        <div class="container">
+        <fieldset>
+            <legend>Attacks</legend>
             {character.Attacks.map((id) => {
                 return <Attack attack={store.Attacks[id]} />
             })}
-        </div>
+        </fieldset>
     )
 }
 
@@ -533,7 +538,7 @@ const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.E
                 <Overview character={character} />
                 <Summary character={character} />
                 <Stats character={character} store={store} />
-                <Notes character={character} />
+                <Flavor character={character} />
             </section>
             <section>
                 <Attacks character={character} store={store} />

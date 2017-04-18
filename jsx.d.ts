@@ -18,6 +18,7 @@ declare namespace JSX {
         header: HTMLAttributes
         input: HTMLAttributes
         label: HTMLAttributes
+        legend: HTMLAttributes
         main: HTMLAttributes
         option: HTMLAttributes
         p: HTMLAttributes
