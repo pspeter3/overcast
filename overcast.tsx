@@ -179,6 +179,12 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
+const POOLS = [
+    "Might",
+    "Speed",
+    "Intellect",
+]
+
 const BASE = "https://api.airtable.com/v0/app3twwgtlOjlzeLy"
 const DATA_KEY = "$data"
 const TOKEN_KEY = "$token"
@@ -460,10 +466,21 @@ const Stat = ({ stat }: { stat: Airtable.Stat }): JSX.Element => {
 }
 
 const Stats = ({ stats }: { stats: Airtable.Stats }): JSX.Element => {
+    const ids = Object.keys(stats).sort((left, right) => {
+        const leftStat = stats[left].Stat
+        const rightStat = stats[right].Stat
+        const leftValue = leftStat !== undefined
+            ? POOLS.indexOf(leftStat)
+            : POOLS.length
+        const rightValue = rightStat !== undefined
+            ? POOLS.indexOf(rightStat)
+            : POOLS.length
+        return leftValue - rightValue
+    })
     return (
         <div class="container">
             <Row>
-                {Object.keys(stats).map((id) => {
+                {ids.map((id) => {
                     return <Stat stat={stats[id]} />
                 })}
             </Row>
