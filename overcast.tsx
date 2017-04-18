@@ -14,21 +14,20 @@ function renderNode(node: JSX.Node): void {
 }
 
 function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, children: JSX.Node[]): void {
-    let key: string | undefined = undefined
-    const statics: JSX.Attribute[] = []
+    const keyValue = attrs !== null
+        ? attrs["key"]
+        : undefined
+    const key = keyValue !== undefined
+        ? keyValue.toString()
+        : keyValue
+    idom.elementOpenStart(tag, key)
     if (attrs !== null) {
-        Object.keys(attrs).forEach((k) => {
-            const value = attrs[k]
-            if (k === "key") {
-                key = value !== undefined
-                    ? value.toString()
-                    : value
-            } else {
-                statics.push(k, value)
+        Object.keys(attrs).forEach((attr) => {
+            if (attr !== "key") {
+                idom.attr(attr, attrs[attr])
             }
         })
     }
-    idom.elementOpenStart(tag, key, statics)
     idom.elementOpenEnd()
     children.forEach(renderNode)
     idom.elementClose(tag)
