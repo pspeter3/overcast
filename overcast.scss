@@ -238,6 +238,30 @@ legend {
   select {
     -moz-appearance: none;
     -webkit-appearance: none;
+
+    &.Might {
+      color: #4CAF50;
+    }
+
+    &.Speed {
+      color: #FFC107;
+    }
+
+    &.Intellect, &.Action, &.Light {
+      color: #2196F3;
+    }
+
+    &.Trained, &.Medium {
+      color: #607D8B;
+    }
+
+    &.Enabler, &.Specialized, &.Heavy {
+      color: #9C27B0;
+    }
+
+    &.Inability {
+      color: #E91E63;
+    }
   }
 
   textarea {

@@ -361,6 +361,7 @@ const Select = ({ name, options, value, content }: { name: string; options: stri
     return (
         <Cell content={content}>
             <select class={value} name={name}>
+                { value ? empty : <option selected></option>}
                 {
                     options.map((option, index) => {
                         const key = index.toString(16)
