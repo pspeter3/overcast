@@ -4,7 +4,7 @@ CACHE MANIFEST
 /overcast/f721b7ec3dae45f87fe33f49.js
 /overcast/157890b9b966ee423ea23632.map
 #42c51d0a58c66deed29b9931d7fab998
-/overcast
+/overcast/
 //ajax.googleapis.com/ajax/libs/incrementaldom/0.5.1/incremental-dom-min.js
 
 NETWORK:
