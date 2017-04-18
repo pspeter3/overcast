@@ -132,6 +132,7 @@ const FOCI = [
     "Defends the Weak",
     "Doesn't Do Much",
     "Employs Magnetism",
+    "Entertains",
     "Exists Partially Out of Phase",
     "Exists in Two Places at Once",
     "Explores Dark Places",
