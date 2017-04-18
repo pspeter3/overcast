@@ -334,7 +334,7 @@ interface CellProps {
 
 const Cell = (props: CellProps, children: JSX.Node[]): JSX.Element => {
     return (
-        <div class={`cell${props !== null && props.content ? " content" :""}`}>
+        <div class={`cell${props !== null && props.content ? " content" : ""}`}>
             {children}
         </div>
     )
@@ -530,13 +530,36 @@ const Stats = ({ character, store }: CharacterStore): JSX.Element => {
     )
 }
 
-const Flavor = ({ character }: { character: Airtable.Character }): JSX.Element => {
+function effectSortKey(effect?: string): number {
+    switch (effect) {
+        case "Minor": return 0
+        case "Major": return 1
+        default: return 2
+    }
+}
+
+const Effect = ({ effect }: { effect: Airtable.Effect }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Level" value={effect.Level} content/>
+            <TextArea name="Notes" value={effect.Notes} />
+        </Row>
+    )
+}
+
+const Flavor = ({ character, store }: CharacterStore): JSX.Element => {
+    const ids = character.Effects.sort((left, right) => {
+        return effectSortKey(store.Effects[left].Level) - effectSortKey(store.Effects[right].Level)
+    })
     return (
         <fieldset>
             <legend>Flavor</legend>
             <Row>
                 <TextArea name="Notes" value={character.Notes} />
             </Row>
+            {ids.map((id) => {
+                return <Effect effect={store.Effects[id]} />
+            })}
         </fieldset>
     )
 }
@@ -545,9 +568,9 @@ const Attack = ({ attack }: { attack: Airtable.Attack }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={attack.Name} />
-            <TextField name="Damage" value={attack.Damage} type="number" min="0" content/>
-            <Select name="Type" value={attack.Type} options={ATTACK_TYPE} content/>
-            <Select name="Distinction" value={attack.Distinction} options={ATTACK_DISTINCTION} content/>
+            <TextField name="Damage" value={attack.Damage} type="number" min="0" content />
+            <Select name="Type" value={attack.Type} options={ATTACK_TYPE} content />
+            <Select name="Distinction" value={attack.Distinction} options={ATTACK_DISTINCTION} content />
         </Row>
     )
 }
@@ -567,8 +590,8 @@ const Armor = ({ armor }: { armor: Airtable.Armor }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={armor.Name} />
-            <Select name="Category" value={armor.Category} options={ARMOR_CATEGORY} content/>
-            <TextField name="Bonus" value={armor.Bonus} type="number" disabled content/>
+            <Select name="Category" value={armor.Category} options={ARMOR_CATEGORY} content />
+            <TextField name="Bonus" value={armor.Bonus} type="number" disabled content />
         </Row>
     )
 }
@@ -584,11 +607,31 @@ const Armors = ({ character, store }: CharacterStore): JSX.Element => {
     )
 }
 
+const Equipment = ({ equipment }: { equipment: Airtable.Equipment }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Name" value={equipment.Name} />
+            <TextArea name="Notes" value={equipment.Notes} />
+        </Row>
+    )
+}
+
+const Equipments = ({ character, store }: CharacterStore): JSX.Element => {
+    return (
+        <fieldset>
+            <legend>Equipment</legend>
+            {character.Equipment.map((id) => {
+                return <Equipment equipment={store.Equipment[id]} />
+            })}
+        </fieldset>
+    )
+}
+
 const Skill = ({ skill }: { skill: Airtable.Skill }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={skill.Name} />
-            <Select name="Level" value={skill.Level} options={SKILL_LEVEL} content/>
+            <Select name="Level" value={skill.Level} options={SKILL_LEVEL} content />
         </Row>
     )
 }
@@ -608,9 +651,9 @@ const Ability = ({ ability }: { ability: Airtable.Ability }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={ability.Name} />
-            <Select name="Type" value={ability.Type} options={ABILITY_TYPE} content/>
-            <Select name="Stat" value={ability.Stat} options={STATS} content/>
-            <TextField name="Cost" value={ability.Cost} type="number" content/>
+            <Select name="Type" value={ability.Type} options={ABILITY_TYPE} content />
+            <Select name="Stat" value={ability.Stat} options={STATS} content />
+            <TextField name="Cost" value={ability.Cost} type="number" content />
             <TextArea name="Notes" value={ability.Notes} />
         </Row>
     )
@@ -631,7 +674,7 @@ const Cypher = ({ cypher }: { cypher: Airtable.Cypher }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={cypher.Name} />
-            <TextField name="Level" value={cypher.Level} type="number" content/>
+            <TextField name="Level" value={cypher.Level} type="number" content />
             <TextArea name="Effect" value={cypher.Effect} />
         </Row>
     )
@@ -663,15 +706,16 @@ const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.E
                 <Overview character={character} />
                 <Summary character={character} />
                 <Stats character={character} store={store} />
-                <Flavor character={character} />
+                <Flavor character={character} store={store}/>
             </section>
             <section>
                 <Maybe ids={character.Attacks} factory={Attacks} character={character} store={store} />
                 <Maybe ids={character.Armor} factory={Armors} character={character} store={store} />
-                <Maybe ids={character.Skills} factory={Skills} character={character} store={store} />
+                <Maybe ids={character.Equipment} factory={Equipments} character={character} store={store} />
             </section>
             <section>
                 <Maybe ids={character.Abilities} factory={Abilities} character={character} store={store} />
+                <Maybe ids={character.Skills} factory={Skills} character={character} store={store} />
                 <Maybe ids={character.Cyphers} factory={Cyphers} character={character} store={store} />
             </section>
         </main>
