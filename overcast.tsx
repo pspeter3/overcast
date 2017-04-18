@@ -328,9 +328,13 @@ const Row = (_: {}, children: JSX.Node[]): JSX.Element => {
     )
 }
 
-const Cell = (_: {}, children: JSX.Node[]): JSX.Element => {
+interface CellProps {
+    content?: boolean
+}
+
+const Cell = (props: CellProps, children: JSX.Node[]): JSX.Element => {
     return (
-        <div class="cell">
+        <div class={`cell${props !== null && props.content ? " content" :""}`}>
             {children}
         </div>
     )
@@ -340,22 +344,22 @@ const Label = ({ name }: { name: string }): JSX.Element => {
     return <label for={name}>{name}</label>
 }
 
-const TextField = (props: { name: string; label?: string } & JSX.HTMLAttributes): JSX.Element => {
+const TextField = (props: { name: string; label?: string } & CellProps & JSX.HTMLAttributes): JSX.Element => {
     const name = props.name
     const attrs = props.type
         ? props
         : { type: "text", ...props }
     return (
-        <Cell>
+        <Cell content={props.content}>
             <input name={name} {...attrs} />
             <Label name={props.label || name} />
         </Cell>
     )
 }
 
-const Select = ({ name, options, value }: { name: string; options: string[]; value: string | undefined }): JSX.Element => {
+const Select = ({ name, options, value, content }: { name: string; options: string[]; value: string | undefined } & CellProps): JSX.Element => {
     return (
-        <Cell>
+        <Cell content={content}>
             <select name={name}>
                 {
                     options.map((option, index) => {
@@ -372,7 +376,7 @@ const Select = ({ name, options, value }: { name: string; options: string[]; val
     )
 }
 
-const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.Element => {
+const TextArea = ({ name, value }: { name: string; value?: string }): JSX.Element => {
     return (
         <Cell>
             <textarea name={name}>{value || ""}</textarea>
@@ -541,9 +545,9 @@ const Attack = ({ attack }: { attack: Airtable.Attack }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={attack.Name} />
-            <TextField name="Damage" value={attack.Damage} type="number" min="0" />
-            <Select name="Type" value={attack.Type} options={ATTACK_TYPE} />
-            <Select name="Distinction" value={attack.Distinction} options={ATTACK_DISTINCTION} />
+            <TextField name="Damage" value={attack.Damage} type="number" min="0" content/>
+            <Select name="Type" value={attack.Type} options={ATTACK_TYPE} content/>
+            <Select name="Distinction" value={attack.Distinction} options={ATTACK_DISTINCTION} content/>
         </Row>
     )
 }
@@ -563,8 +567,8 @@ const Armor = ({ armor }: { armor: Airtable.Armor }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={armor.Name} />
-            <Select name="Category" value={armor.Category} options={ARMOR_CATEGORY} />
-            <TextField name="Bonus" value={armor.Bonus} type="number" disabled />
+            <Select name="Category" value={armor.Category} options={ARMOR_CATEGORY} content/>
+            <TextField name="Bonus" value={armor.Bonus} type="number" disabled content/>
         </Row>
     )
 }
@@ -584,7 +588,7 @@ const Skill = ({ skill }: { skill: Airtable.Skill }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={skill.Name} />
-            <Select name="Level" value={skill.Level} options={SKILL_LEVEL} />
+            <Select name="Level" value={skill.Level} options={SKILL_LEVEL} content/>
         </Row>
     )
 }
@@ -604,9 +608,9 @@ const Ability = ({ ability }: { ability: Airtable.Ability }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={ability.Name} />
-            <Select name="Type" value={ability.Type} options={ABILITY_TYPE} />
-            <Select name="Stat" value={ability.Stat} options={STATS} />
-            <TextField name="Cost" value={ability.Cost} type="number" />
+            <Select name="Type" value={ability.Type} options={ABILITY_TYPE} content/>
+            <Select name="Stat" value={ability.Stat} options={STATS} content/>
+            <TextField name="Cost" value={ability.Cost} type="number" content/>
             <TextArea name="Notes" value={ability.Notes} />
         </Row>
     )

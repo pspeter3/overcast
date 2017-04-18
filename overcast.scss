@@ -179,6 +179,11 @@ legend {
   height: rem(72);
   margin: 0 rem(8) rem(8);
 
+  &.content {
+    flex: 0 1 auto;
+    max-width: rem(80);
+  }
+
   label {
     color: $help-text-color;
     display: block;
