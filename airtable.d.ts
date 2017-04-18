@@ -119,7 +119,6 @@ declare namespace Airtable {
         readonly Character?: CharacterId[]
         readonly Level?: string
         readonly Name?: string
-        readonly Notes?: string
     }
 
     export type StatId = string

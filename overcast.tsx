@@ -194,7 +194,24 @@ const ATTACK_DISTINCTION = [
 const ARMOR_CATEGORY = [
     "Light",
     "Medium",
-    "Heavy"
+    "Heavy",
+]
+
+const SKILL_LEVEL = [
+    "Inability",
+    "Trained",
+    "Specialized",
+]
+
+const ABILITY_TYPE = [
+    "Action",
+    "Enabler",
+]
+
+const STATS = [
+    "Might",
+    "Speed",
+    "Intellect",
 ]
 
 const BASE = "https://api.airtable.com/v0/app3twwgtlOjlzeLy"
@@ -358,7 +375,7 @@ const Select = ({ name, options, value }: { name: string; options: string[]; val
 const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.Element => {
     return (
         <Cell>
-            <textarea name={name}>{value}</textarea>
+            <textarea name={name}>{value || ""}</textarea>
             <Label name={name} />
         </Cell>
     )
@@ -547,7 +564,7 @@ const Armor = ({ armor }: { armor: Airtable.Armor }): JSX.Element => {
         <Row>
             <TextField name="Name" value={armor.Name} />
             <Select name="Category" value={armor.Category} options={ARMOR_CATEGORY} />
-            <TextField name="Bonus" value={armor.Bonus} type="number" disabled/>
+            <TextField name="Bonus" value={armor.Bonus} type="number" disabled />
         </Row>
     )
 }
@@ -563,8 +580,52 @@ const Armors = ({ character, store }: CharacterStore): JSX.Element => {
     )
 }
 
-const Maybe = (props: { factory: (props: CharacterStore) => void; ids: string[] } & CharacterStore): JSX.Element => {
-    return props.ids.length > 0
+const Skill = ({ skill }: { skill: Airtable.Skill }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Name" value={skill.Name} />
+            <Select name="Level" value={skill.Level} options={SKILL_LEVEL} />
+        </Row>
+    )
+}
+
+const Skills = ({ character, store }: CharacterStore): JSX.Element => {
+    return (
+        <fieldset>
+            <legend>Skills</legend>
+            {character.Skills.map((id) => {
+                return <Skill skill={store.Skills[id]} />
+            })}
+        </fieldset>
+    )
+}
+
+const Ability = ({ ability }: { ability: Airtable.Ability }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Name" value={ability.Name} />
+            <Select name="Type" value={ability.Type} options={ABILITY_TYPE} />
+            <Select name="Stat" value={ability.Stat} options={STATS} />
+            <TextField name="Cost" value={ability.Cost} type="number" />
+            <TextArea name="Notes" value={ability.Notes} />
+        </Row>
+    )
+}
+
+const Abilities = ({ character, store }: CharacterStore): JSX.Element => {
+    return (
+        <fieldset>
+            <legend>Abilities</legend>
+            {character.Abilities.map((id) => {
+                return <Ability ability={store.Abilities[id]} />
+            })}
+        </fieldset>
+    )
+}
+
+
+const Maybe = (props: { factory: (props: CharacterStore) => void; ids?: string[] } & CharacterStore): JSX.Element => {
+    return props.ids && props.ids.length > 0
         ? <props.factory character={props.character} store={props.store} />
         : empty
 }
@@ -582,6 +643,10 @@ const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.E
             <section>
                 <Maybe ids={character.Attacks} factory={Attacks} character={character} store={store} />
                 <Maybe ids={character.Armor} factory={Armors} character={character} store={store} />
+                <Maybe ids={character.Skills} factory={Skills} character={character} store={store} />
+            </section>
+            <section>
+                <Maybe ids={character.Abilities} factory={Abilities} character={character} store={store} />
             </section>
         </main>
     )
