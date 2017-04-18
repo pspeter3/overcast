@@ -327,7 +327,9 @@ const Select = ({ name, options, value }: { name: string; options: string[]; val
                     options.map((option, index) => {
                         const key = index.toString(16)
                         const selected = option === value
-                        return <option key={key} value={option} selected={selected}>{option}</option>
+                        return selected
+                            ? <option key={key} value={option} selected={selected}>{option}</option>
+                            : <option key={key} value={option}>{option}</option>
                     })
                 }
             </select>
