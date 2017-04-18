@@ -16,7 +16,7 @@ function renderNode(node: JSX.Node): void {
 function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, children: JSX.Node[]): void {
     let key: string | undefined = undefined
     const statics: JSX.Attribute[] = []
-    if (attrs != null) {
+    if (attrs !== null) {
         Object.keys(attrs).forEach((k) => {
             const value = attrs[k]
             if (k === "key") {
@@ -249,7 +249,7 @@ function fetchData(): void {
         fetchTable<Airtable.EffectId, Airtable.Effect>("Effects"),
         fetchTable<Airtable.EquipmentId, Airtable.Equipment>("Equipment"),
         fetchTable<Airtable.SkillId, Airtable.Skill>("Skills"),
-        fetchTable<Airtable.StatId, Airtable.Stat>("Stats")
+        fetchTable<Airtable.StatId, Airtable.Stat>("Stats"),
     ]).then((values: Airtable.TableList) => {
         const data: Airtable.Schema = {
             Abilities: values[0],
@@ -261,7 +261,7 @@ function fetchData(): void {
             Effects: values[6],
             Equipment: values[7],
             Skills: values[8],
-            Stats: values[9]
+            Stats: values[9],
         }
         setItem(DATA_KEY, JSON.stringify(data))
     }).catch(onError)
@@ -482,9 +482,9 @@ const Notes = ({ character }: { character: Airtable.Character }): JSX.Element =>
 
 const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.Element => {
     const character = store.Characters[id]
-    const stats = character.Stats.reduce((stats, id) => {
-        stats[id] = store.Stats[id]
-        return stats
+    const stats = character.Stats.reduce((s, i) => {
+        s[i] = store.Stats[i]
+        return s
     }, {} as Airtable.Stats)
     return (
         <main class="character">
