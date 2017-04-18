@@ -691,7 +691,6 @@ const Cyphers = ({ character, store }: CharacterStore): JSX.Element => {
     )
 }
 
-
 const Maybe = (props: { factory: (props: CharacterStore) => void; ids?: string[] } & CharacterStore): JSX.Element => {
     return props.ids && props.ids.length > 0
         ? <props.factory character={props.character} store={props.store} />
