@@ -360,7 +360,7 @@ const TextField = (props: { name: string; label?: string } & CellProps & JSX.HTM
 const Select = ({ name, options, value, content }: { name: string; options: string[]; value: string | undefined } & CellProps): JSX.Element => {
     return (
         <Cell content={content}>
-            <select name={name}>
+            <select class={value} name={name}>
                 {
                     options.map((option, index) => {
                         const key = index.toString(16)
@@ -627,6 +627,27 @@ const Abilities = ({ character, store }: CharacterStore): JSX.Element => {
     )
 }
 
+const Cypher = ({ cypher }: { cypher: Airtable.Cypher }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Name" value={cypher.Name} />
+            <TextField name="Level" value={cypher.Level} type="number" content/>
+            <TextArea name="Effect" value={cypher.Effect} />
+        </Row>
+    )
+}
+
+const Cyphers = ({ character, store }: CharacterStore): JSX.Element => {
+    return (
+        <fieldset>
+            <legend>Cyphers</legend>
+            {character.Cyphers.map((id) => {
+                return <Cypher cypher={store.Cyphers[id]} />
+            })}
+        </fieldset>
+    )
+}
+
 
 const Maybe = (props: { factory: (props: CharacterStore) => void; ids?: string[] } & CharacterStore): JSX.Element => {
     return props.ids && props.ids.length > 0
@@ -651,6 +672,7 @@ const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.E
             </section>
             <section>
                 <Maybe ids={character.Abilities} factory={Abilities} character={character} store={store} />
+                <Maybe ids={character.Cyphers} factory={Cyphers} character={character} store={store} />
             </section>
         </main>
     )
