@@ -208,6 +208,10 @@ legend {
     top: rem(40);
     width: 100%;
 
+    &:disabled {
+      color: $subheader-color;
+    }
+
     &:placeholder {
       color: $help-text-color;
     }

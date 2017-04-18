@@ -191,6 +191,12 @@ const ATTACK_DISTINCTION = [
     "Stabbing",
 ]
 
+const ARMOR_CATEGORY = [
+    "Light",
+    "Medium",
+    "Heavy"
+]
+
 const BASE = "https://api.airtable.com/v0/app3twwgtlOjlzeLy"
 const DATA_KEY = "$data"
 const TOKEN_KEY = "$token"
@@ -425,6 +431,11 @@ const List = ({ store }: { store: Airtable.Schema }): JSX.Element => {
     )
 }
 
+interface CharacterStore {
+    character: Airtable.Character
+    store: Airtable.Schema
+}
+
 const Overview = ({ character }: { character: Airtable.Character }): JSX.Element => {
     return (
         <fieldset>
@@ -482,7 +493,7 @@ function statSortKey(stat?: string): number {
     }
 }
 
-const Stats = ({ character, store }: { character: Airtable.Character, store: Airtable.Schema }): JSX.Element => {
+const Stats = ({ character, store }: CharacterStore): JSX.Element => {
     const ids = character.Stats.sort((left, right) => {
         return statSortKey(store.Stats[left].Stat) - statSortKey(store.Stats[right].Stat)
     })
@@ -513,13 +524,14 @@ const Attack = ({ attack }: { attack: Airtable.Attack }): JSX.Element => {
     return (
         <Row>
             <TextField name="Name" value={attack.Name} />
-            <TextField name="Damange" value={attack.Damage} type="number" min="0" />
+            <TextField name="Damage" value={attack.Damage} type="number" min="0" />
             <Select name="Type" value={attack.Type} options={ATTACK_TYPE} />
             <Select name="Distinction" value={attack.Distinction} options={ATTACK_DISTINCTION} />
         </Row>
     )
 }
-const Attacks = ({ character, store }: { character: Airtable.Character, store: Airtable.Schema }): JSX.Element => {
+
+const Attacks = ({ character, store }: CharacterStore): JSX.Element => {
     return (
         <fieldset>
             <legend>Attacks</legend>
@@ -528,6 +540,33 @@ const Attacks = ({ character, store }: { character: Airtable.Character, store: A
             })}
         </fieldset>
     )
+}
+
+const Armor = ({ armor }: { armor: Airtable.Armor }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Name" value={armor.Name} />
+            <Select name="Category" value={armor.Category} options={ARMOR_CATEGORY} />
+            <TextField name="Bonus" value={armor.Bonus} type="number" disabled/>
+        </Row>
+    )
+}
+
+const Armors = ({ character, store }: CharacterStore): JSX.Element => {
+    return (
+        <fieldset>
+            <legend>Armor</legend>
+            {character.Armor.map((id) => {
+                return <Armor armor={store.Armor[id]} />
+            })}
+        </fieldset>
+    )
+}
+
+const Maybe = (props: { factory: (props: CharacterStore) => void; ids: string[] } & CharacterStore): JSX.Element => {
+    return props.ids.length > 0
+        ? <props.factory character={props.character} store={props.store} />
+        : empty
 }
 
 const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.Element => {
@@ -541,7 +580,8 @@ const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.E
                 <Flavor character={character} />
             </section>
             <section>
-                <Attacks character={character} store={store} />
+                <Maybe ids={character.Attacks} factory={Attacks} character={character} store={store} />
+                <Maybe ids={character.Armor} factory={Armors} character={character} store={store} />
             </section>
         </main>
     )
