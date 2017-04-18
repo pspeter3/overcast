@@ -178,7 +178,6 @@ legend {
   flex: 1;
   height: rem(72);
   margin: 0 rem(8) rem(8);
-  position: relative;
 
   label {
     color: $help-text-color;
@@ -186,8 +185,7 @@ legend {
     font-size: rem(12);
     height: rem(16);
     line-height: rem(16);
-    position: absolute;
-    top: rem(16);
+    margin-top: rem(16) - rem(72);
   }
 
   input[type="text"], input[type="number"], input[type="password"], select, textarea {
@@ -202,8 +200,7 @@ legend {
     height: rem(32);
     line-height: rem(16);
     padding-bottom: rem(8) - rem(1);
-    position: absolute;
-    top: rem(40);
+    margin-top: rem(40);
     width: 100%;
 
     &:disabled {
