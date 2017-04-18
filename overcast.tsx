@@ -361,6 +361,7 @@ const Select = ({ name, options, value, content }: { name: string; options: stri
     return (
         <Cell content={content}>
             <select class={value} name={name}>
+                { value ? empty : <option selected></option>}
                 {
                     options.map((option, index) => {
                         const key = index.toString(16)
@@ -690,7 +691,6 @@ const Cyphers = ({ character, store }: CharacterStore): JSX.Element => {
         </fieldset>
     )
 }
-
 
 const Maybe = (props: { factory: (props: CharacterStore) => void; ids?: string[] } & CharacterStore): JSX.Element => {
     return props.ids && props.ids.length > 0
