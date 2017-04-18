@@ -179,6 +179,18 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
+const ATTACK_TYPE = [
+    "Melee",
+    "Ranged",
+]
+
+const ATTACK_DISTINCTION = [
+    "Crushing",
+    "Reaching",
+    "Slashing",
+    "Stabbing",
+]
+
 const BASE = "https://api.airtable.com/v0/app3twwgtlOjlzeLy"
 const DATA_KEY = "$data"
 const TOKEN_KEY = "$token"
@@ -460,7 +472,7 @@ const Stat = ({ stat }: { stat: Airtable.Stat }): JSX.Element => {
 }
 
 function statSortKey(stat?: string): number {
-    switch(stat) {
+    switch (stat) {
         case "Might": return 0
         case "Speed": return 1
         case "Intellect": return 2
@@ -493,6 +505,26 @@ const Notes = ({ character }: { character: Airtable.Character }): JSX.Element =>
     )
 }
 
+const Attack = ({ attack }: { attack: Airtable.Attack }): JSX.Element => {
+    return (
+        <Row>
+            <TextField name="Name" value={attack.Name} />
+            <TextField name="Damange" value={attack.Damage} type="number" min="0" />
+            <Select name="Type" value={attack.Type} options={ATTACK_TYPE} />
+            <Select name="Distinction" value={attack.Distinction} options={ATTACK_DISTINCTION} />
+        </Row>
+    )
+}
+const Attacks = ({ character, store }: { character: Airtable.Character, store: Airtable.Schema }): JSX.Element => {
+    return (
+        <div class="container">
+            {character.Attacks.map((id) => {
+                return <Attack attack={store.Attacks[id]} />
+            })}
+        </div>
+    )
+}
+
 const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.Element => {
     const character = store.Characters[id]
     return (
@@ -500,10 +532,11 @@ const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.E
             <section>
                 <Overview character={character} />
                 <Summary character={character} />
-                <Stats character={character} store={store}/>
+                <Stats character={character} store={store} />
                 <Notes character={character} />
             </section>
             <section>
+                <Attacks character={character} store={store} />
             </section>
         </main>
     )
