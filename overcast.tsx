@@ -20,9 +20,9 @@ function renderDomElement(tag: string, attrs: JSX.HTMLAttributes | null, childre
         Object.keys(attrs).forEach((k) => {
             const value = attrs[k]
             if (k === "key") {
-                key = typeof value === "undefined"
-                    ? value
-                    : value.toString()
+                key = value !== undefined
+                    ? value.toString()
+                    : value
             } else {
                 statics.push(k, value)
             }
@@ -306,7 +306,7 @@ const Label = ({ name }: { name: string }): JSX.Element => {
     return <label for={name}>{name}</label>
 }
 
-const TextField = (props: { name: string } & JSX.HTMLAttributes): JSX.Element => {
+const TextField = (props: { name: string; label?: string } & JSX.HTMLAttributes): JSX.Element => {
     const name = props.name
     const attrs = props.type
         ? props
@@ -314,12 +314,12 @@ const TextField = (props: { name: string } & JSX.HTMLAttributes): JSX.Element =>
     return (
         <Cell>
             <input name={name} {...attrs} />
-            <Label name={name} />
+            <Label name={props.label || name} />
         </Cell>
     )
 }
 
-const Select = ({ name, options, value }: { name: string; options: string[]; value: string }): JSX.Element => {
+const Select = ({ name, options, value }: { name: string; options: string[]; value: string | undefined }): JSX.Element => {
     return (
         <Cell>
             <select name={name}>
@@ -339,7 +339,7 @@ const Select = ({ name, options, value }: { name: string; options: string[]; val
 const TextArea = ({ name, value }: { name: string } & JSX.HTMLAttributes): JSX.Element => {
     return (
         <Cell>
-            <textarea name={name} value={value} />
+            <textarea name={name}>{value}</textarea>
             <Label name={name} />
         </Cell>
     )
@@ -367,7 +367,7 @@ const Upgrade = (): JSX.Element => {
 const Login = (): JSX.Element => {
     return (
         <form onsubmit={authenticate}>
-            <fieldset>
+            <fieldset class="container">
                 <Row>
                     <TextField name="Token" type="password" required inputMode="verbatim" autofocus />
                 </Row>
@@ -400,18 +400,100 @@ const Err = (): JSX.Element => {
     )
 }
 
-interface View {
-    (props: { store: Airtable.Schema }): JSX.Element
-}
-
-const List: View = (props) => {
-    const characters = props.store.Characters
+const List = ({ store }: { store: Airtable.Schema }): JSX.Element => {
+    const characters = store.Characters
     return (
         <main class="list">
             {Object.keys(characters).map((id) => {
                 const character = characters[id]
                 return <a class="item" href={`#${id}`}>{character.Name}</a>
             })}
+        </main>
+    )
+}
+
+const Overview = ({ character }: { character: Airtable.Character }): JSX.Element => {
+    return (
+        <fieldset class="container">
+            <Row>
+                <TextField name="Name" value={character.Name} />
+            </Row>
+            <Row>
+                <Select name="Descriptor" value={character.Descriptor} options={DESCRIPTORS} />
+            </Row>
+            <Row>
+                <Select name="Flavor" value={character.Flavor} options={FLAVORS} />
+                <Select name="Type" value={character.Type} options={TYPES} />
+            </Row>
+            <Row>
+                <Select name="Focus" value={character.Focus} options={FOCI} />
+            </Row>
+        </fieldset>
+    )
+}
+
+const Summary = ({ character }: { character: Airtable.Character }): JSX.Element => {
+    return (
+        <fieldset class="container">
+            <Row>
+                <TextField name="Effort" value={character.Effort} type="number" min="0" />
+                <TextField name="Limit" value={character.Limit} type="number" min="0" />
+                <TextField name="XP" value={character.XP} type="number" min="0" />
+            </Row>
+        </fieldset>
+    )
+}
+
+const Stat = ({ stat }: { stat: Airtable.Stat }): JSX.Element => {
+    return (
+        <div class="column">
+            <Row>
+                <TextField name="Value" label={stat.Stat} value={stat.Value} type="number" min="0" max={stat.Pool} />
+            </Row>
+            <Row>
+                <TextField name="Pool" value={stat.Pool} type="number" min="0" />
+                <TextField name="Edge" value={stat.Edge} type="number" min="0" />
+            </Row>
+        </div>
+    )
+}
+
+const Stats = ({ stats }: { stats: Airtable.Stats }): JSX.Element => {
+    return (
+        <div class="container">
+            <Row>
+                {Object.keys(stats).map((id) => {
+                    return <Stat stat={stats[id]} />
+                })}
+            </Row>
+        </div>
+    )
+}
+
+const Notes = ({ character }: { character: Airtable.Character }): JSX.Element => {
+    return (
+        <fieldset class="container">
+            <Row>
+                <TextArea name="Notes" value={character.Notes} />
+            </Row>
+        </fieldset>
+    )
+}
+
+const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.Element => {
+    const character = store.Characters[id]
+    const stats = character.Stats.reduce((stats, id) => {
+        stats[id] = store.Stats[id]
+        return stats
+    }, {} as Airtable.Stats)
+    return (
+        <main class="character">
+            <section>
+                <Overview character={character} />
+                <Summary character={character} />
+                <Stats stats={stats} />
+                <Notes character={character} />
+            </section>
         </main>
     )
 }
@@ -430,7 +512,11 @@ const Main = (): JSX.Element => {
     if (ERR !== null) {
         return <Err />
     }
-    return <List store={store} />
+    const hash = location.hash.substr(1)
+    if (hash.length === 0) {
+        return <List store={store} />
+    }
+    return <Character id={hash} store={store} />
 }
 
 const App = (): JSX.Element => {

@@ -150,10 +150,9 @@ header {
 /**
  * Forms
  */
-fieldset {
+.container {
   background: $container-background-color;
-  border: none;
-  margin-bottom: rem(16);
+  margin-bottom: rem(16)
 }
 
 .row {
@@ -162,10 +161,19 @@ fieldset {
   width: 100%;
 }
 
+.column {
+  flex: 1;
+  margin: 0 rem(-8);
+}
+
+fieldset {
+  border: none;
+}
+
 .cell {
   flex: 1;
   height: rem(72);
-  margin: 0 rem(8);
+  margin: 0 rem(8) rem(8);
   position: relative;
 
   label {
@@ -242,5 +250,17 @@ fieldset {
     position: relative;
     text-transform: uppercase;
     top: rem(18);
+  }
+}
+
+@media (min-device-width: 1024px) {
+  .character {
+    display: flex;
+    padding: 0 rem(8);
+  }
+
+  section {
+    flex: 1;
+    margin: 0 rem(8) rem(8);
   }
 }

@@ -17,13 +17,14 @@ declare namespace JSX {
         form: HTMLAttributes
         header: HTMLAttributes
         input: HTMLAttributes
+        label: HTMLAttributes
         main: HTMLAttributes
+        option: HTMLAttributes
         p: HTMLAttributes
         path: HTMLAttributes
+        section: HTMLAttributes
         select: HTMLAttributes
         svg: HTMLAttributes
-        label: HTMLAttributes
         textarea: HTMLAttributes
-        option: HTMLAttributes
     }
 }

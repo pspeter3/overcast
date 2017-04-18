@@ -126,11 +126,11 @@ declare namespace Airtable {
     export type Stats = Record<StatId, Stat>
     export interface Stat {
         readonly Character: CharacterId[]
-        readonly Edge?: Number
+        readonly Edge?: number
         readonly ID?: string
-        readonly Pool?: Number
+        readonly Pool?: number
         readonly Stat?: string
-        readonly Value?: Number
+        readonly Value?: number
     }
 
     export interface Schema {
