@@ -179,12 +179,6 @@ const FOCI = [
     "Would Rather Be Reading",
 ]
 
-const POOLS = [
-    "Might",
-    "Speed",
-    "Intellect",
-]
-
 const BASE = "https://api.airtable.com/v0/app3twwgtlOjlzeLy"
 const DATA_KEY = "$data"
 const TOKEN_KEY = "$token"
@@ -465,23 +459,24 @@ const Stat = ({ stat }: { stat: Airtable.Stat }): JSX.Element => {
     )
 }
 
-const Stats = ({ stats }: { stats: Airtable.Stats }): JSX.Element => {
-    const ids = Object.keys(stats).sort((left, right) => {
-        const leftStat = stats[left].Stat
-        const rightStat = stats[right].Stat
-        const leftValue = leftStat !== undefined
-            ? POOLS.indexOf(leftStat)
-            : POOLS.length
-        const rightValue = rightStat !== undefined
-            ? POOLS.indexOf(rightStat)
-            : POOLS.length
-        return leftValue - rightValue
+function statSortKey(stat?: string): number {
+    switch(stat) {
+        case "Might": return 0
+        case "Speed": return 1
+        case "Intellect": return 2
+        default: return 3
+    }
+}
+
+const Stats = ({ character, store }: { character: Airtable.Character, store: Airtable.Schema }): JSX.Element => {
+    const ids = character.Stats.sort((left, right) => {
+        return statSortKey(store.Stats[left].Stat) - statSortKey(store.Stats[right].Stat)
     })
     return (
         <div class="container">
             <Row>
                 {ids.map((id) => {
-                    return <Stat stat={stats[id]} />
+                    return <Stat stat={store.Stats[id]} />
                 })}
             </Row>
         </div>
@@ -500,17 +495,15 @@ const Notes = ({ character }: { character: Airtable.Character }): JSX.Element =>
 
 const Character = ({ id, store }: { id: string; store: Airtable.Schema }): JSX.Element => {
     const character = store.Characters[id]
-    const stats = character.Stats.reduce((s, i) => {
-        s[i] = store.Stats[i]
-        return s
-    }, {} as Airtable.Stats)
     return (
         <main class="character">
             <section>
                 <Overview character={character} />
                 <Summary character={character} />
-                <Stats stats={stats} />
+                <Stats character={character} store={store}/>
                 <Notes character={character} />
+            </section>
+            <section>
             </section>
         </main>
     )
